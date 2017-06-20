@@ -1,7 +1,7 @@
 /**
  * Created by T4rk on 6/19/2017.
  */
-import { objMapReducer } from 'obj-extensions'
+import { objMapReducer } from './obj-extensions'
 
 /**
  * Chunk an array in chunks of length n

@@ -1,3 +1,3 @@
 # tarkjs
 
-Utility module for functions I use across projects.
+Collection of functions and objects I use across projects.

@@ -1,7 +1,7 @@
 /**
  * Created by T4rk on 6/19/2017.
  */
-import { arrIncludes } from 'arr-extensions'
+import { arrIncludes } from './arr-extensions'
 
 export const objMapReducer = (m, [k, v]) => {m[k] = v; return m}
 

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --out-dir lib --source-maps",
-    "watch": "babel -s inline -d lib -w src"
+    "watch": "babel -s inline -d lib -w src",
+    "doc": "esdoc"
   },
   "keywords": [],
   "author": "t4rk@outlook.com",
@@ -17,5 +18,6 @@
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-preset-env": "^1.5.2",
     "eslint": "^4.0.0"
-  }
+  },
+  "dependencies": {}
 }

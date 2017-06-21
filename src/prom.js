@@ -3,10 +3,16 @@
  */
 
 /**
+ * @typedef {Object} CancelablePromise
+ * @property {Promise} promise
+ * @property {function} cancel
+ */
+
+/**
  * Wrap a function into a cancelable promise.
- * @param func {function}
- * @param options {{}}
- * @return {{promise: Promise, cancel: (function())}}
+ * @param {!function} func
+ * @param {?Object} options
+ * @return {CancelablePromise}
  */
 export const promiseWrap = (func, options={rejectNull: false}) => {
     let canceled = false

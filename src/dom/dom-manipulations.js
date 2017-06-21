@@ -4,14 +4,17 @@
 
 /**
  * Set the attributes of a DOM Element
- * @param elem {Element}
- * @param attributes {{}}
+ * @param {!Element} elem
+ * @param {!Object} attributes
  */
 export const setElementAttributes = (elem, attributes) => {
     Object.keys(attributes).filter(k => attributes.hasOwnProperty(k))
         .forEach(k => elem.setAttribute(k, attributes[k]))
 }
 
+/**
+ * shorthand func
+ */
 export const getHead = () => document.querySelector('head')
 
 const defaultCreateElementOptions = {
@@ -26,7 +29,6 @@ const defaultCreateElementOptions = {
  * @param container {Element} the parent to append the new element to.
  * @param elementId {string} unique id of the element.
  * @param options {{}}
- * @see defaultCreateElementOptions
  * @return {Element}
  */
 export const createElement = (container, elementId, options=defaultCreateElementOptions) => {
@@ -62,9 +64,9 @@ export const loadStyle = (styleId, cssFile, onload= ()=> null) => createElement(
 
 /**
  * Append a script to the body.
- * @param scriptId {string} unique id to only load once.
- * @param src {string} file to load.
- * @param onload {function}
+ * @param {!string} scriptId unique id to only load once.
+ * @param {!string} src file to load.
+ * @param {function} [onload=()=> null]
  */
 export const loadScript = (scriptId, src, onload= ()=> null) => createElement(document.querySelector('body'), scriptId,{
     elementType: 'script',
@@ -73,14 +75,14 @@ export const loadScript = (scriptId, src, onload= ()=> null) => createElement(do
 })
 
 /**
- *
- * @param styleId {string}
+ * Apply disabled attribute to a link tag.
+ * @param {string} styleId
  */
 export const disableStyle = (styleId) => setElementAttributes(document.getElementById(styleId), {disabled: 'disabled'})
 
 /**
  *
- * @param elem {Element}
+ * @param {Element} elem
  * @return {{left: number, top: number}}
  */
 export const getOffset = (elem) => {
@@ -93,8 +95,8 @@ export const getOffset = (elem) => {
 
 /**
  * Get the actual font-size in pixel of an element.
- * @param elem
- * @return number
+ * @param {Element} elem
+ * @return {number}
  */
 export const getFontSize = (elem) => parseFloat(window.getComputedStyle(elem, null).getPropertyValue('font-size'))
 
@@ -102,14 +104,16 @@ const concatStr = (prev, next) => `${prev}${next}`
 
 /**
  * Change the key style from camelCase to dash separated
- * @param key {string}
+ * @param {string} key
+ * @return {string}
  */
 export const formatStyleKey = (key) => key.split('')
     .map(item => item.charCodeAt() > 96 ? item: `-${item.toLowerCase()}`).reduce(concatStr, '')
 
 /**
  * Serialize a style object to apply to an element on createElement attributes style
- * @param styleObj
+ * @param {Object} styleObj
+ * @return {string}
  */
 export const serializeStyleObj = (styleObj) => Object.keys(styleObj).filter(k => styleObj.hasOwnProperty(k))
     .map(k => `${formatStyleKey(k)}: ${styleObj[k]};`).reduce(concatStr, '')

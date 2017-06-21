@@ -1,9 +1,29 @@
 import { getOffset, getFontSize } from '../dom/dom-manipulations'
 
+/**
+ * @typedef {Object} AnimationOptions
+ * @property {?number} division number of frames to execute.
+ * @property {?function} callback called when the animation end.
+ */
+
+/**
+ * @typedef {AnimationOptions} FadeInOptions
+ * @property {?string} display
+ */
+
+/**
+ *
+ * @type {FadeInOptions}
+ */
 const defaultFadeInOptions = {
-    display:'block', division:60, callback: () => null
+    display:'block', division:100, callback: () => null
 }
 
+/**
+ * Progressively fade in an element in n frame.
+ * @param {!Element} elem
+ * @param {?FadeInOptions} [options={display: 'block', division: 60}]
+ */
 export const fadeIn = (elem, options=defaultFadeInOptions) => {
     const { display, division, callback } = {...defaultFadeInOptions, ...options }
     elem.style.opacity = 0
@@ -21,10 +41,19 @@ export const fadeIn = (elem, options=defaultFadeInOptions) => {
     fade()
 }
 
+/**
+ *
+ * @type {AnimationOptions}
+ */
 const defaultFadeOutOptions = {
     division: 60, callback: () => null
 }
 
+/**
+ * Progressively fade out an element in n frame.
+ * @param {!Element} elem
+ * @param {?AnimationOptions} [options]
+ */
 export const fadeOut = (elem, options=defaultFadeOutOptions) => {
     const { division, callback } = {...defaultFadeOutOptions, ...options}
     elem.style.opacity = 1
@@ -40,10 +69,26 @@ export const fadeOut = (elem, options=defaultFadeOutOptions) => {
     fade()
 }
 
+/**
+ * @typedef {AnimationOptions} MoveOutOptions
+ * @property {?number} height
+ * @property {?number} width
+ */
+
+/**
+ *
+ * @type {MoveOutOptions}
+ */
+
 const defaultMoveOptions = {
     callback: () => null, height: 100, width: 100, division: 100
 }
 
+/**
+ * Move an element for height and width value.
+ * @param {!Element} elem
+ * @param {?MoveOutOptions} [options={height: 100, width: 100, division: 100}]
+ */
 export const moveOut = (elem, options=defaultMoveOptions) => {
     const { callback, height, width, division } = {...defaultMoveOptions, ...options}
     const moveHeight = height / division
@@ -70,10 +115,21 @@ export const moveOut = (elem, options=defaultMoveOptions) => {
     }
     move()
 }
+
+
+/**
+ *
+ * @type {AnimationOptions}
+ */
 const defaultDeflateOptions = {
     callback: () => null, division: 100
 }
 
+/**
+ * Deflate an element, making it disappear in n frames.
+ * @param {!Element} elem
+ * @param {?AnimationOptions} [options]
+ */
 export const deflate = (elem, options=defaultDeflateOptions) => {
     const { division, callback } = {...defaultDeflateOptions, ...options}
     const decrementX = Math.ceil(elem.offsetWidth / division)

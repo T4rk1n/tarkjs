@@ -26,10 +26,10 @@ const defaultCreateElementOptions = {
 
 /**
  * Create an element only if it doesn't already exist.
- * @param container {Element} the parent to append the new element to.
- * @param elementId {string} unique id of the element.
- * @param options {{}}
- * @return {Element}
+ * @param {!Element} container the parent to append the new element to.
+ * @param {!string} elementId unique id of the element.
+ * @param {?Object} options
+ * @return {Element} The created or found element.
  */
 export const createElement = (container, elementId, options=defaultCreateElementOptions) => {
     let element = document.getElementById(elementId)
@@ -47,9 +47,9 @@ export const createElement = (container, elementId, options=defaultCreateElement
 
 /**
  * Load a style into the head.
- * @param styleId {string} unique id to only load once.
- * @param cssFile {string} file to load.
- * @param onload {function} may only work in chrome and ff.
+ * @param {!string} styleId unique id to only load once.
+ * @param {!string} cssFile file to load.
+ * @param {?function} onload may only work in chrome and ff.
  */
 export const loadStyle = (styleId, cssFile, onload= ()=> null) => createElement(getHead(), styleId, {
     attributes: {
@@ -66,7 +66,7 @@ export const loadStyle = (styleId, cssFile, onload= ()=> null) => createElement(
  * Append a script to the body.
  * @param {!string} scriptId unique id to only load once.
  * @param {!string} src file to load.
- * @param {function} [onload=()=> null]
+ * @param {?function} [onload]
  */
 export const loadScript = (scriptId, src, onload= ()=> null) => createElement(document.querySelector('body'), scriptId,{
     elementType: 'script',

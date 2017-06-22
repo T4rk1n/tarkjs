@@ -5,13 +5,13 @@
 /**
  * @typedef {Object} CancelablePromise
  * @property {Promise} promise
- * @property {function} cancel
+ * @property {function} cancel cancel the promise.
  */
 
 /**
  * Wrap a function into a cancelable promise.
- * @param {!function} func
- * @param {?Object} options
+ * @param {!function} func function to call with no params.
+ * @param {?Object} [options={rejectNull: false}]
  * @return {CancelablePromise}
  */
 export const promiseWrap = (func, options={rejectNull: false}) => {
@@ -30,6 +30,25 @@ export const promiseWrap = (func, options={rejectNull: false}) => {
     })
     return {
         promise,
+        cancel() { canceled = true }
+    }
+}
+
+/**
+ * Wrap a promise as cancelable.
+ * @param  {!Promise} promise
+ * @return {CancelablePromise}
+ */
+export const toCancelable = (promise) => {
+    let canceled = false
+    const wrap = new Promise((resolve, reject) => {
+        promise.then(value => {
+            if (canceled) reject("Promise was canceled")
+            else resolve(value)
+        }).catch(err => reject(err))
+    })
+    return {
+        promise: wrap,
         cancel() { canceled = true }
     }
 }

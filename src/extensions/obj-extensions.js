@@ -10,7 +10,7 @@ export const objMapReducer = (m, [k, v]) => {m[k] = v; return m}
  * @param {!Object} obj
  * @return {Array}
  */
-export const objItems = (obj) => Object.keys(obj).map(k => [k, obj[k]])
+export const objItems = (obj) => Object.keys(obj).filter(k => obj.hasOwnProperty(k)).map(k => [k, obj[k]])
 
 /**
  * Apply a filter and return back a new object.

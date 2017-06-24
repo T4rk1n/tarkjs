@@ -1,16 +1,15 @@
 /**
  * Created by T4rk on 6/19/2017.
  */
+import { objMapReducer, objItems } from '../extensions/obj-extensions'
 
 /**
  * Set the attributes of a DOM Element
  * @param {!Element} elem
  * @param {!Object} attributes
  */
-export const setElementAttributes = (elem, attributes) => {
-    Object.keys(attributes).filter(k => attributes.hasOwnProperty(k))
-        .forEach(k => elem.setAttribute(k, attributes[k]))
-}
+export const setElementAttributes = (elem, attributes) => objItems(attributes)
+    .forEach(([k, v]) => elem.setAttribute(k, v))
 
 /**
  * shorthand func
@@ -39,8 +38,8 @@ export const createElement = (container, elementId, options=defaultCreateElement
         element.id = elementId
         if (innerHtml) element.innerHTML = innerHtml
         element.onload = onload
-        container.appendChild(element)
         setElementAttributes(element, attributes)
+        container.appendChild(element)
     }
     return element
 }
@@ -117,3 +116,9 @@ export const formatStyleKey = (key) => key.split('')
  */
 export const serializeStyleObj = (styleObj) => Object.keys(styleObj).filter(k => styleObj.hasOwnProperty(k))
     .map(k => `${formatStyleKey(k)}: ${styleObj[k]};`).reduce(concatStr, '')
+
+/**
+ * Get all the url params of the current page.
+ * @return {Object}
+ */
+export const getUrlParams = () => window.location.search.substring(1).split('&').map(p => p.split('=')).reduce(objMapReducer)

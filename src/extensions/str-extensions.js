@@ -35,3 +35,21 @@ export const findAllMatches = (str, re, options=defaultFindAllOptions) => {
  * @return {!string}
  */
 export const capitalize = (str) => `${str.charAt(0).toLocaleUpperCase()}${str.substr(1, str.length)}`
+
+/**
+ * Format a number in style: 9,999.00
+ * @param {number} num the number to format
+ * @param {number} [precision=2] the number of decimal to keep
+ * @param {string} [separator=',']
+ */
+export const formatCommaSpaced = (num, precision=2, separator=',') =>
+    num.toFixed(precision).replace(/(\d)(?=(\d{3})+\.)/g, `$1${separator}`)
+
+/**
+ * Format a number with a dollar sign
+ * @param {!number|string} num
+ * @param {string} [sign='$']
+ * @param {boolean} [after=false]
+ */
+export const formatDollars = (num, sign='$', after=false) => after ? `${num}${sign}` : `${sign}${num}`
+

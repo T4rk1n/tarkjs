@@ -28,3 +28,10 @@ export const arrIncludes = (arr, e) => arr.reduce((p, n) => (p || e === n), fals
  * @return {Object}
  */
 export const arrMapReduceToObj = (arr, mapping, obj={}) => arr.map(mapping).reduce(objMapReducer, obj)
+
+/**
+ * Copy the elements of an array to a new array.
+ * @param {Array} arr
+ * @return {Array}
+ */
+export const arrCopy = (arr) => arr.reduce((a,e) => {a.push(e); return a} ,[])

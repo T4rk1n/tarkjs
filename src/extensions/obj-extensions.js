@@ -36,4 +36,10 @@ export const objRemoveKeys = (obj, keys) => Object.keys(obj).filter(k => obj.has
 export const objFormat = (obj, str) => Object.keys(obj).filter(k => obj.hasOwnProperty(k))
     .reduce((p, n) => p.replace(`{${n}}`, obj[n]), str)
 
+/**
+ * Copy the properties values of an object to a new object.
+ * @param {!Object} obj
+ * @return {Object}
+ */
+export const objCopy = (obj) => objItems(obj).reduce(objMapReducer, {})
 

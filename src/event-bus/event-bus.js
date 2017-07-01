@@ -3,6 +3,7 @@
  */
 
 import { promiseWrap } from '../prom'
+import { objCopy } from '../extensions/obj-extensions'
 
 /**
  * Simple object with event type and optional payload.
@@ -90,7 +91,7 @@ export class EventBus {
  * // dispatched event {event: 'hello_value_changed', payload: {newValue: 'hi', oldValue: 'hello'}}
  */
 export const changeNotifier = (obj, eventBus) => {
-    obj._data = Object.keys(obj).filter(f => obj.hasOwnProperty(f)).map(k => [k, obj[k]]).reduce((a,[k,v])=> {a[k] = v; return a},{})
+    obj._data = objCopy(obj)
     Object.keys(obj).filter(f => obj.hasOwnProperty(f) && f !== '_data').forEach(k => {
         Object.defineProperty(obj, k, {
             set: (value) => {

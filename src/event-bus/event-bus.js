@@ -56,7 +56,7 @@ export class EventBus {
             i++
             if (i < handlers.length) promiseWrap(handle)
         }
-        promiseWrap(handle)
+        return promiseWrap(handle)
     }
 
     /**
@@ -65,9 +65,41 @@ export class EventBus {
      * @param {function} handler
      */
     removeEventHandler(event, handler) {
-        // TODO assure the event is not currently dispatching.
+        // TODO assure the event is not currently dispatching / cancel.
         const handlers = this._handlers[event]
         if (!handlers) return
         this._handlers[event] = handlers.filter(h => h !== handler)
     }
+}
+
+/**
+ * @typedef {TEvent} ValueChangedEvent
+ * @property {{oldValue: *, newValue: *}} payload
+ */
+
+/**
+ * Wraps an object properties to dispatch a value_changed event on the setter.
+ * The dispatched event key is `${key}_value_changed`.
+ * @param {Object} obj The obj to modify. Will use _data property to hold the values.
+ * @param {EventBus} eventBus The event bus to dispatch events.
+ * @return {Object}
+ * @throws {TypeError} if fail to wraps a property, should not happen if using plain objects.
+ * @example
+ * const e = changeNotifier({hello: 'hello'})
+ * e.hello = 'hi'
+ * // dispatched event {event: 'hello_value_changed', payload: {newValue: 'hi', oldValue: 'hello'}}
+ */
+export const changeNotifier = (obj, eventBus) => {
+    obj._data = Object.keys(obj).filter(f => obj.hasOwnProperty(f)).map(k => [k, obj[k]]).reduce((a,[k,v])=> {a[k] = v; return a},{})
+    Object.keys(obj).filter(f => obj.hasOwnProperty(f) && f !== '_data').forEach(k => {
+        Object.defineProperty(obj, k, {
+            set: (value) => {
+                const oldValue = obj._data[k]
+                obj._data[k] = value
+                eventBus.dispatch({event: `${k}_value_changed`, payload: {newValue: value, oldValue}})
+            },
+            get: () => obj._data[k]
+        })
+    })
+    return obj
 }

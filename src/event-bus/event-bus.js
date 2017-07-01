@@ -43,7 +43,7 @@ export class EventBus {
     //noinspection JSCommentMatchesSignature,JSValidateJSDoc
     /**
      * Dispatch the event to all the handlers in the order they were added.
-     * Handlers are wrapped in recursive tail promises.
+     * Handlers receives payload as param and are wrapped in recursive tail promises.
      * @param {TEvent} param
      */
     dispatch({event, payload}) {
@@ -81,6 +81,8 @@ export class EventBus {
 /**
  * Wraps an object properties to dispatch a value_changed event on the setter.
  * The dispatched event key is `${key}_value_changed`.
+ * Watch out to not set the value again in the event callbacks otherwise there could be
+ * circular madness.
  * @param {Object} obj The obj to modify. Will use _data property to hold the values.
  * @param {EventBus} eventBus The event bus to dispatch events.
  * @return {Object}
@@ -103,4 +105,29 @@ export const changeNotifier = (obj, eventBus) => {
         })
     })
     return obj
+}
+
+
+const fulfilled = (action) => `${action}_FULFILLED`
+const rejected = (action) => `${action}_REJECTED`
+const pending = (action) => `${action}_PENDING`
+
+/**
+ * Wrap a promise to send events on success or failure.
+ *
+ * Events sent:
+ * - `${action}_PENDING` no payload
+ * - `${action}_FULFILLED` payload {value}
+ * - `${action}_REJECTED` payload {error}
+ * @param {!EventBus} eventBus
+ * @param {!string} action
+ * @param {!Promise} promise
+ */
+export const statefulPromise = (eventBus, action, promise) => {
+    eventBus.dispatch({event: pending(action)})
+    promise.then(
+        value => eventBus.dispatch({event: fulfilled(action), payload: {value}})
+    ).catch(
+        error => eventBus.dispatch({event: rejected(action), payload: {error}})
+    )
 }

@@ -45,6 +45,12 @@ export const createElement = (container, elementId, options=defaultCreateElement
 }
 
 /**
+ * Remove an element from the DOM.
+ * @param {Element} elem
+ */
+export const removeElement = (elem) => elem.parentNode.removeChild(elem)
+
+/**
  * Load a style into the head.
  * @param {!string} styleId unique id to only load once.
  * @param {!string} cssFile file to load.
@@ -80,7 +86,7 @@ export const loadScript = (scriptId, src, onload= ()=> null) => createElement(do
 export const disableStyle = (styleId) => setElementAttributes(document.getElementById(styleId), {disabled: 'disabled'})
 
 /**
- *
+ * Get the position of an element in a page.
  * @param {Element} elem
  * @return {{left: number, top: number}}
  */
@@ -93,11 +99,19 @@ export const getOffset = (elem) => {
 }
 
 /**
+ * Get the actual numeric value of an element style property.
+ * @param {Element} elem
+ * @param {string} propName
+ * @return {number}
+ */
+export const getComputedNumStyleAttr = (elem, propName) => parseFloat(window.getComputedStyle(elem, null).getPropertyValue(propName))
+
+/**
  * Get the actual font-size in pixel of an element.
  * @param {Element} elem
  * @return {number}
  */
-export const getFontSize = (elem) => parseFloat(window.getComputedStyle(elem, null).getPropertyValue('font-size'))
+export const getFontSize = (elem) => getComputedNumStyleAttr(elem, 'font-size')
 
 const concatStr = (prev, next) => `${prev}${next}`
 

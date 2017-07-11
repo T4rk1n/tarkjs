@@ -35,3 +35,11 @@ export const arrMapReduceToObj = (arr, mapping, obj={}) => arr.map(mapping).redu
  * @return {Array}
  */
 export const arrCopy = (arr) => arr.reduce((a,e) => {a.push(e); return a} ,[])
+
+
+/**
+ * Sum the numbers from an array.
+ * @param {Array} arr containing numbers only.
+ * @return {Number}
+ */
+export const arrSum = (arr) => arr.reduce((p, n) => p+n, 0)

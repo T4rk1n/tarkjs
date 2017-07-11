@@ -136,3 +136,25 @@ export const serializeStyleObj = (styleObj) => Object.keys(styleObj).filter(k =>
  * @return {Object}
  */
 export const getUrlParams = () => window.location.search.substring(1).split('&').map(p => p.split('=')).reduce(objMapReducer)
+
+/**
+ * Cross compatible download from text content.
+ * @param {string} filename
+ * @param {string} content
+ * @param {string} [type="text/plain;charset=utf-8;"] a valid mimetype.
+ * @param {boolean} [revoke=true] revoke the url object created to release memory.
+ */
+export const createDownload = (filename, content, type="text/plain;charset=utf-8;", revoke=true) => {
+    const blob = new Blob([content], {type})
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename)
+    } else {
+        const href = window.URL.createObjectURL(blob)
+        const elem = createElement(document.querySelector('body'), filename, {elementType: 'a', attributes: {
+            href, download: filename
+        }})
+        elem.click()
+        removeElement(elem)
+        if (revoke) window.URL.revokeObjectURL(href)
+    }
+}

@@ -1,6 +1,6 @@
 {
   "name": "tarkjs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "watch": "babel -s inline -d lib -w src",
     "doc": "esdoc"
   },
-  "keywords": [],
+  "keywords": ["functions", "event", "deque", "dom", "animations", "seed", "random"],
   "author": "t4rk@outlook.com",
   "license": "MIT",
   "repository": "https://github.com/T4rk1n/tarkjs",
@@ -17,6 +17,7 @@
     "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-preset-env": "^1.5.2",
+    "babelify": "^7.3.0",
     "eslint": "^4.0.0"
   },
   "dependencies": {}

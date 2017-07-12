@@ -2,6 +2,8 @@
  * Created by Phil on 7/12/2017.
  */
 
+import { objItems } from "../extensions/obj-extensions"
+
 const jsonPattern = /json/i
 
 /**
@@ -17,13 +19,15 @@ const defaultFetchOptions = {
 }
 
 /**
+ * Fetch promise wrap
+ *
  * If you don't care about the response headers and meta, use this to stay dry.
+ * Intended to be used with the PromiseStore so it have a valid resolve value when fulfilled.
  *
- * If the response is json, it will automatically convert the value to an object.
- *
+ * If the response is json, it will automatically parse the value to an object.
  * @param {!string} url the address to fetch
  * @param {Object} [init={}] the fetch init object.
- * @param {Object} [options={rejectNotOk: true}]
+ * @param {FetchOptions} [options={rejectNotOk: true}]
  */
 export const fetchRequest = (url, init={}, options=defaultFetchOptions) => new Promise((resolve, reject) => {
     const { rejectNotOk } = {...defaultFetchOptions, ...options}
@@ -39,9 +43,9 @@ export const fetchRequest = (url, init={}, options=defaultFetchOptions) => new P
 
 /**
  * @typedef {Object} XhrOptions
- * @property {string} method
- * @property {Object} headers
- * @property {*} payload
+ * @property {string} [method='GET']
+ * @property {Object} [headers={}]
+ * @property {string|Blob|ArrayBuffer} [payload='']
  */
 
 /**
@@ -55,6 +59,10 @@ const defaultXhrOptions = {
 
 /**
  * Xhr promise wrap.
+ *
+ * Fetch can't do put request, so xhr still useful.
+ *
+ * Auto parse json responses.
  * @param {string} url
  * @param {XhrOptions} [options]
  */
@@ -62,7 +70,7 @@ export const xhrRequest = (url, options=defaultXhrOptions) => new Promise((resol
     const { method, headers, payload } = {...defaultXhrOptions, ...options}
     const xhr = new XMLHttpRequest()
     xhr.open(method, url)
-    Object.keys(headers).filter(k => headers.hasOwnProperty(k)).forEach(k => xhr.setRequestHeader(k, headers[k]))
+    objItems(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v))
     xhr.onreadystatechange = () => {
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             let responseValue = xhr.response

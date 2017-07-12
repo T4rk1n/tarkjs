@@ -41,5 +41,5 @@ export const objFormat = (obj, str) => Object.keys(obj).filter(k => obj.hasOwnPr
  * @param {!Object} obj
  * @return {Object}
  */
-export const objCopy = (obj) => objItems(obj).reduce(objMapReducer, {})
+export const objCopy = (obj) => Object.keys(obj).reduce((m, k) => {m[k] = obj[k]; return m}, {})
 

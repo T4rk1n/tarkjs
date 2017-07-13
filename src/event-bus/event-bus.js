@@ -53,7 +53,7 @@ export class EventBus {
         let i = 0
         const handle = () => {
             const h = handlers[i]
-            h(payload)
+            h({event, payload})
             i++
             if (i < handlers.length) promiseWrap(handle)
         }
@@ -79,12 +79,21 @@ export class EventBus {
  */
 
 /**
+ * @param {string} prefix
+ * @param {string} key
+ * @return {string}
+ */
+export const valueChanged = (prefix, key) => `${prefix ? `${prefix}_`: ''}${key}_value_changed`
+
+/**
  * Wraps an object properties to dispatch a value_changed event on the setter.
  * The dispatched event key is `${key}_value_changed`.
+ *
  * Watch out to not set the value again in the event callbacks otherwise there could be
  * circular madness.
  * @param {Object} obj The obj to modify. Will use _data property to hold the values.
  * @param {EventBus} eventBus The event bus to dispatch events.
+ * @param {Object} [options={prefix: undefined}]
  * @return {Object}
  * @throws {TypeError} if fail to wraps a property, should not happen if using plain objects.
  * @example
@@ -92,14 +101,17 @@ export class EventBus {
  * e.hello = 'hi'
  * // dispatched event {event: 'hello_value_changed', payload: {newValue: 'hi', oldValue: 'hello'}}
  */
-export const changeNotifier = (obj, eventBus) => {
+export const changeNotifier = (obj, eventBus, options={}) => {
+    const { prefix } = options
     obj._data = objCopy(obj)
     Object.keys(obj).filter(f => obj.hasOwnProperty(f) && f !== '_data').forEach(k => {
         Object.defineProperty(obj, k, {
             set: (value) => {
                 const oldValue = obj._data[k]
                 obj._data[k] = value
-                eventBus.dispatch({event: `${k}_value_changed`, payload: {newValue: value, oldValue}})
+                eventBus.dispatch({
+                    event: valueChanged(prefix, k),
+                    payload: {newValue: value, oldValue}})
             },
             get: () => obj._data[k]
         })
@@ -107,27 +119,3 @@ export const changeNotifier = (obj, eventBus) => {
     return obj
 }
 
-
-const fulfilled = (action) => `${action}_FULFILLED`
-const rejected = (action) => `${action}_REJECTED`
-const pending = (action) => `${action}_PENDING`
-
-/**
- * Wrap a promise to send events on success or failure.
- *
- * Events sent:
- * - `${action}_PENDING` no payload
- * - `${action}_FULFILLED` payload {value}
- * - `${action}_REJECTED` payload {error}
- * @param {!EventBus} eventBus
- * @param {!string} action
- * @param {!Promise} promise
- */
-export const statefulPromise = (eventBus, action, promise) => {
-    eventBus.dispatch({event: pending(action)})
-    promise.then(
-        value => eventBus.dispatch({event: fulfilled(action), payload: {value}})
-    ).catch(
-        error => eventBus.dispatch({event: rejected(action), payload: {error}})
-    )
-}

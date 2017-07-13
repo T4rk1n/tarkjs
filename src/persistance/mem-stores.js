@@ -5,6 +5,7 @@
 import { EventBus, valueChanged, changeNotifier } from '../event-bus/event-bus'
 import {toCancelable} from "../prom";
 import {objMapReducer} from "../extensions/obj-extensions";
+import { Deque } from '../containers/deque'
 
 const fulfilled = (action) => `${action}_fulfilled`
 const rejected = (action) => `${action}_rejected`
@@ -134,5 +135,103 @@ export class PromiseStore {
      */
     subscribe(action, sub) {
         this.actionStore[action].subscribe(sub)
+    }
+}
+
+/**
+ * @typedef {Object} SocketStoreOptions
+ * @property {?EventBus} [eventBus=null] The eventBus to dispatch events to, if null instantiate a new one.
+ * @property {?string} [socketName=null] The name of the socket, if null take the url
+ * @property {Array} [protocols=[]] socket protocols
+ * @property {boolean} [start=false] Start the socket on initialization.
+ * @property {int} [capacity=100] The number of message to keep in the store (FIFO).
+ * @property {function(err:*)} [onError] socket event handler
+ * @property {function(e:*)} [onOpen] socket event handler
+ * @property {function(e:*)} [onClose] socket event handler
+ * @property {function(data:*)} [transformMessage] Transform the message before inserting the data in the store
+ */
+
+/**
+ * @type {SocketStoreOptions}
+ */
+const defaultSocketStoreOptions = {
+    eventBus: null, protocols: [], start: false, capacity: 100, socketName: null,
+    onOpen: (e) => {},
+    onError: (err) => {console.log(err)},
+    onClose: (e) => {},
+    transformMessage: (data) => data
+}
+
+const formatMessageReceived = (socketName) => `${socketName}_message_received`
+
+/**
+ * Store the messages received by a socket.
+ */
+export class SocketStore {
+    /**
+     * @param {!string} url
+     * @param {SocketStoreOptions} [options]
+     */
+    constructor(url, options=defaultSocketStoreOptions) {
+        const {
+            eventBus, protocols, start, onOpen, capacity, onError, onClose, transformMessage, socketName
+        } = {...defaultSocketStoreOptions, ...options}
+        this._eventBus = eventBus || new EventBus()
+        this.socketName = socketName || url
+        /**
+         * Notifies of changes with event `${socket}_messages_value_changed`
+         * @type {{messages: Deque}}
+         */
+        this.store = changeNotifier({messages: new Deque({capacity})}, this._eventBus, {prefix: this.socketName})
+        this.url = url
+        this.protocols = protocols
+        this._socket = null
+        this.onOpen = onOpen
+        this.onError = onError
+        this.onClose = onClose
+        this.transformMessage = transformMessage
+        if (start) this.start()
+    }
+
+    /**
+     * Initialize the socket and its handlers.
+     */
+    start() {
+        this._socket = new WebSocket(this.url, this.protocols)
+        this._socket.onopen = this.onOpen
+        this._socket.onerror = this.onError
+        this._socket.onmessage = (event) => {
+            const data = this.transformMessage(event.data)
+            this.store.messages = this.store.messages.pushBack(data) // emits change
+            this._eventBus.dispatch({
+                event: formatMessageReceived(this.socketName),
+                payload: {data, store: this.store.messages}
+            })
+        }
+    }
+
+    /**
+     * Send a message to the server.
+     * @param {*} message
+     */
+    send(message) {
+        if (!this._socket || this._socket.readyState !== WebSocket.OPEN) throw new Error('Socket not open')
+        this._socket.send(message)
+    }
+
+    /**
+     * Close the internal socket.
+     * @param {{code: !number, reason: !string}} [options={code: 1000, reason: ''}]
+     */
+    close(options={code: 1000, reason: ''}) {
+        if (this._socket && this._socket.readyState === WebSocket.OPEN) this._socket.close(options.code, options.reason)
+    }
+
+    /**
+     * Subscribe to change in the store.
+     * @param {function(TEvent)} sub
+     */
+    subscribe(sub) {
+        this._eventBus.addEventHandler(formatMessageReceived(this.socketName), sub)
     }
 }

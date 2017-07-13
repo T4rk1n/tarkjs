@@ -103,19 +103,22 @@ export const valueChanged = (prefix, key) => `${prefix ? `${prefix}_`: ''}${key}
  */
 export const changeNotifier = (obj, eventBus, options={}) => {
     const { prefix } = options
-    obj._data = objCopy(obj)
-    Object.keys(obj).filter(f => obj.hasOwnProperty(f) && f !== '_data').forEach(k => {
-        Object.defineProperty(obj, k, {
+    const notifier = {}
+    notifier._data = objCopy(obj)
+    Object.keys(obj).filter(f => obj.hasOwnProperty(f)).reduce((a, k) => {
+        Object.defineProperty(a, k, {
             set: (value) => {
                 const oldValue = obj._data[k]
                 obj._data[k] = value
                 eventBus.dispatch({
                     event: valueChanged(prefix, k),
-                    payload: {newValue: value, oldValue}})
+                    payload: {newValue: value, oldValue}
+                })
             },
             get: () => obj._data[k]
         })
-    })
-    return obj
+    }, notifier)
+    return notifier
 }
+
 

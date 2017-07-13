@@ -40,6 +40,7 @@ export class Deque {
     pushBack(item) {
         this._arr.push(item)
         if (this._capacity && this._arr.length >= this._capacity) this.popFront()
+        return this
     }
 
     /**
@@ -49,6 +50,7 @@ export class Deque {
     pushFront(item) {
         this._arr.unshift(item)
         if (this._capacity && this._arr.length >= this._capacity) this.popBack()
+        return this
     }
 
     map(mapping) {

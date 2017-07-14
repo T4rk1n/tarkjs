@@ -79,11 +79,11 @@ export class EventBus {
  */
 
 /**
- * @param {string} prefix
+ * @param {?string} prefix
  * @param {string} key
  * @return {string}
  */
-export const valueChanged = (prefix, key) => `${prefix ? `${prefix}_`: ''}${key}_value_changed`
+export const valueChanged = (key, prefix=null) => `${prefix ? `${prefix}_`: ''}${key}_value_changed`
 
 /**
  * Wraps an object properties to dispatch a value_changed event on the setter.
@@ -106,16 +106,16 @@ export const changeNotifier = (obj, eventBus, options={}) => {
     const notifier = {}
     notifier._data = objCopy(obj)
     Object.keys(obj).filter(f => obj.hasOwnProperty(f)).reduce((a, k) => {
-        Object.defineProperty(a, k, {
+        Object.defineProperty(notifier, k, {
             set: (value) => {
-                const oldValue = obj._data[k]
-                obj._data[k] = value
+                const oldValue = notifier._data[k]
+                notifier._data[k] = value
                 eventBus.dispatch({
-                    event: valueChanged(prefix, k),
+                    event: valueChanged(k, prefix),
                     payload: {newValue: value, oldValue}
                 })
             },
-            get: () => obj._data[k]
+            get: () => notifier._data[k]
         })
     }, notifier)
     return notifier

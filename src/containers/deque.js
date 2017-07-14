@@ -24,11 +24,18 @@ export class Deque {
         this._arr = arr || []
     }
 
-
+    /**
+     * Remove from the back
+     * @return {*}
+     */
     popBack() {
         return this._arr.pop()
     }
 
+    /**
+     * Remove from the front
+     * @return {*}
+     */
     popFront() {
         return this._arr.shift()
     }
@@ -36,6 +43,7 @@ export class Deque {
     /**
      * Insert item at the end of the stack.
      * @param {*} item
+     * @return {Deque} this
      */
     pushBack(item) {
         this._arr.push(item)
@@ -46,6 +54,7 @@ export class Deque {
     /**
      * Insert an item at the first position of the stack.
      * @param {*} item
+     * @return {Deque} this
      */
     pushFront(item) {
         this._arr.unshift(item)
@@ -53,26 +62,50 @@ export class Deque {
         return this
     }
 
+    /**
+     * @param {function} mapping
+     * @return {Array} mapped array.
+     */
     map(mapping) {
         return this._arr.map(mapping)
     }
 
+    /**
+     * @param {function} predicate
+     * @return {Array}
+     */
     filter(predicate) {
         return this._arr.filter(predicate)
     }
 
+    /**
+     * @param {function} reducer
+     * @param {function} first
+     * @return {*}
+     */
     reduce(reducer, first) {
         return this._arr.reduce(reducer, first)
     }
 
+    /**
+     * @param {function} each
+     */
     forEach(each) {
         this._arr.forEach(each)
     }
 
+    /**
+     * To replace the deque[index]
+     * @param {int} index
+     * @return {*}
+     */
     at(index) {
         return this._arr[index]
     }
 
+    /**
+     * @return {Number}
+     */
     get length() {
         return this._arr.length
     }

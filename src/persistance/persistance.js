@@ -94,6 +94,9 @@ export class BaseBrowserStorage extends BaseStorage {
  * Storage using window.sessionStorage, clear on browser exit.
  */
 export class BrowserSessionStorage extends BaseBrowserStorage {
+    /**
+     *
+     */
     constructor() {
         super(window.sessionStorage)
     }

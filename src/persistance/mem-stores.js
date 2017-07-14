@@ -3,8 +3,8 @@
  */
 
 import { EventBus, valueChanged, changeNotifier } from '../event-bus/event-bus'
-import {toCancelable} from "../prom";
-import {objMapReducer} from "../extensions/obj-extensions";
+import { toCancelable } from '../prom'
+import { objMapReducer } from '../extensions/obj-extensions'
 import { Deque } from '../containers/deque'
 
 const fulfilled = (action) => `${action}_fulfilled`
@@ -36,11 +36,18 @@ export const createPromiseStates = (action) => ({
 export const statefulPromise = (eventBus, action, promise) => {
     eventBus.dispatch({event: pending(action)})
     promise.then(
-        value => eventBus.dispatch({event: fulfilled(action), payload: {value}})
+        value => eventBus.dispatch({event: fulfilled(action), payload: value})
     ).catch(
-        error => eventBus.dispatch({event: rejected(action), payload: {error}})
+        error => eventBus.dispatch({event: rejected(action), payload: error})
     )
 }
+
+/**
+ * A function that returns a promise
+ * @typedef {function} promiseAction
+ * @param {?*} options
+ * @return {!Promise}
+ */
 
 /**
  * @example
@@ -64,7 +71,7 @@ export const statefulPromise = (eventBus, action, promise) => {
  */
 export class PromiseStore {
     /**
-     * @param {Array<Function>} actions must return a {Promise}
+     * @param {Object} actions
      * @param {?EventBus} eventBus
      */
     constructor(actions, eventBus=null) {
@@ -84,7 +91,7 @@ export class PromiseStore {
             }, this._eventBus, {prefix: k}),
             subscribe: (sub) => [
                 'result', 'pending', 'rejected', 'fulfilled'
-            ].forEach(i => this._eventBus.addEventHandler(valueChanged(k, i), sub))
+            ].forEach(i => this._eventBus.addEventHandler(valueChanged(i, k), sub))
         }]).reduce(objMapReducer, {})
 
         /**
@@ -135,10 +142,13 @@ export class PromiseStore {
      */
     subscribe(action, sub) {
         this.actionStore[action].subscribe(sub)
+        const states = [fulfilled(action), pending(action), rejected(action)]
+        states.forEach(s  => this._eventBus.addEventHandler(s, sub))
     }
 }
 
 /**
+ * Options for the {@link SocketStore#constructor}.
  * @typedef {Object} SocketStoreOptions
  * @property {?EventBus} [eventBus=null] The eventBus to dispatch events to, if null instantiate a new one.
  * @property {?string} [socketName=null] The name of the socket, if null take the url
@@ -177,18 +187,43 @@ export class SocketStore {
             eventBus, protocols, start, onOpen, capacity, onError, onClose, transformMessage, socketName
         } = {...defaultSocketStoreOptions, ...options}
         this._eventBus = eventBus || new EventBus()
+        /**
+         * @type {string}
+         */
         this.socketName = socketName || url
         /**
          * Notifies of changes with event `${socket}_messages_value_changed`
          * @type {{messages: Deque}}
          */
         this.store = changeNotifier({messages: new Deque({capacity})}, this._eventBus, {prefix: this.socketName})
+        /**
+         * @type {string}
+         */
         this.url = url
+        /**
+         * @type {Array<string>}
+         */
         this.protocols = protocols
+        /**
+         * @type {WebSocket}
+         * @private
+         */
         this._socket = null
+        /**
+         * @type {function(e: *)}
+         */
         this.onOpen = onOpen
+        /**
+         * @type {function(e: *)}
+         */
         this.onError = onError
+        /**
+         * @type {function(e: *)}
+         */
         this.onClose = onClose
+        /**
+         * @type {function(data: *):!*}
+         */
         this.transformMessage = transformMessage
         if (start) this.start()
     }
@@ -197,6 +232,7 @@ export class SocketStore {
      * Initialize the socket and its handlers.
      */
     start() {
+        //noinspection JSCheckFunctionSignatures
         this._socket = new WebSocket(this.url, this.protocols)
         this._socket.onopen = this.onOpen
         this._socket.onerror = this.onError
@@ -212,7 +248,7 @@ export class SocketStore {
 
     /**
      * Send a message to the server.
-     * @param {*} message
+     * @param {string|Blob} message
      */
     send(message) {
         if (!this._socket || this._socket.readyState !== WebSocket.OPEN) throw new Error('Socket not open')
@@ -221,7 +257,7 @@ export class SocketStore {
 
     /**
      * Close the internal socket.
-     * @param {{code: !number, reason: !string}} [options={code: 1000, reason: ''}]
+     * @param {{code: number, reason: string}} [options={code: 1000, reason: ''}]
      */
     close(options={code: 1000, reason: ''}) {
         if (this._socket && this._socket.readyState === WebSocket.OPEN) this._socket.close(options.code, options.reason)
@@ -229,7 +265,7 @@ export class SocketStore {
 
     /**
      * Subscribe to change in the store.
-     * @param {function(TEvent)} sub
+     * @param {function(e: TEvent)} sub
      */
     subscribe(sub) {
         this._eventBus.addEventHandler(formatMessageReceived(this.socketName), sub)

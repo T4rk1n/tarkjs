@@ -144,7 +144,7 @@ export class PromiseStore {
     subscribe(action, sub) {
         this.actionStore[action].subscribe(sub)
         const states = [fulfilled(action), pending(action), rejected(action)]
-        states.forEach(s  => this._eventBus.addEventHandler(states, ))
+        states.forEach(s  => this._eventBus.addEventHandler(s, sub))
     }
 }
 

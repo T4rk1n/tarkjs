@@ -181,9 +181,9 @@ export class PromiseStore {
  */
 const defaultSocketStoreOptions = {
     eventBus: null, protocols: [], start: false, capacity: 100, socketName: null,
-    onOpen: (e) => {},
-    onError: (err) => {console.log(err)},
-    onClose: (e) => {},
+    onOpen: () => {},
+    onError: () => {},
+    onClose: () => {},
     transformMessage: (data) => data
 }
 
@@ -252,18 +252,13 @@ export class SocketStore {
     start() {
         //noinspection JSCheckFunctionSignatures
         this._socket = new WebSocket(this.url, this.protocols)
-        this._socket.onopen = (e) => {
-            this.onOpen(e)
-            this._eventBus.dispatch({event: this.socket_open, payload: e})
+        const socketEvent = (e, func, event) => {
+            func(e)
+            this._eventBus.dispatch({event, payload: e})
         }
-        this._socket.onerror = (e) => {
-            this.onError(e)
-            this._eventBus.dispatch({event: this.socket_error, payload: e})
-        }
-        this._socket.onclose = (e) => {
-            this.onClose(e)
-            this._eventBus.dispatch({event: this.socket_close, payload: e})
-        }
+        this._socket.onopen = (e) => socketEvent(e, this.onOpen, this.socket_open)
+        this._socket.onerror = (e) => socketEvent(e, this.onError, this.socket_error)
+        this._socket.onclose = (e) => socketEvent(e, this.onClose, this.socket_close)
         this._socket.onmessage = (event) => {
             const data = this.transformMessage(event.data)
             // emits change events - remove the notifier as it is redundant ?

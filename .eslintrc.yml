@@ -10,9 +10,6 @@ rules:
   indent:
     - error
     - 4
-  linebreak-style:
-    - error
-    - windows
   quotes:
     - error
     - single
@@ -20,4 +17,6 @@ rules:
     - error
     - never
   no-cond-assign:
+    - warn
+  no-unused-vars:
     - warn

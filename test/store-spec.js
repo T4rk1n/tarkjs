@@ -14,30 +14,28 @@ describe('Test the PromiseStore', () => {
         spyOn(eventBus, 'dispatch').and.callThrough()
         spyOn(eventBus, 'addEventHandler').and.callThrough()
 
-        store = new PromiseStore({ fake: (pay)=> new Promise((resolve, reject) => {
-            setTimeout(() => { resolve(pay); }, 1000)
+        store = new PromiseStore({
+            fake: ({pay, fakeReject, delay })=> new Promise((resolve, reject) => {
+                setTimeout(() => fakeReject ? reject('rejected') : resolve(pay) , delay)
         }) }, eventBus)
-
-
     })
 
-    it('Should add event handlers to eventBus', () => {
-        //expect(eventBus.addEventHandler).toHaveBeenCalledTimes(3) // For the three state handlers
+    it('Test the store add event handlers to eventBus', () => {
+        expect(eventBus.addEventHandler).toHaveBeenCalledTimes(3)
     })
 
-    it('Expect dispatch to be called for value changed event', () => {
-        //expect(eventBus.dispatch).toHaveBeenCalledTimes(1)
-        //prom.promise.then(_ => expect(eventBus.dispatch).toHaveBeenCalledTimes(0))
-    })
 
-    it('Test the store value change on action call',(done) => {
+    it('Test the store promise actions handlers',(done) => {
         eventBus.addEventHandler('fake_fulfilled', (value) => {
             const { result } = store.actionStore.fake.store
             expect(result).toBe('hello')
             expect(result).toBe(value.payload)
-            done()
+            value.cancel()  // Test the event bus cancelable event.
         })
+
         store.subscribe('fake', (e) => {
+            // TODO How to test the valueChange ? the events are called even if the oldValue === newValue.
+            // I don't want to change the notifier setters to include the check for various reasons.
             switch (e.event) {
                 case valueChanged('pending', 'fake'):
                     break
@@ -46,16 +44,20 @@ describe('Test the PromiseStore', () => {
                 case valueChanged('rejected', 'fake'):
                     break
                 case 'fake_fulfilled':
-                    expect(e.payload).toBe('hello')
+                    expect('to be canceled').toBeNull()  // should be canceled.
                     break
                 case 'fake_rejected':
+                    expect(e.payload).toBe('rejected')
+                    done()
                     break
                 case 'fake_pending':
                     expect(e.payload).toBeUndefined()
                     break
             }
         })
-        prom = store.actions.fake('hello')
+
+        store.actions.fake({fakeReject: true, delay: 1000})
+        store.actions.fake({pay: 'hello', delay: 500})
     })
 })
 

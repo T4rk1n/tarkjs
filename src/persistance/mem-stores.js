@@ -13,7 +13,7 @@ const pending = (action) => `${action}_pending`
 
 /**
  *
- * @param {Object} action
+ * @param {string} action
  */
 export const createPromiseStates = (action) => ({
     base: action,
@@ -90,8 +90,9 @@ export class PromiseStore {
                 error: null
             }, this._eventBus, {prefix: k}),
             subscribe: (sub) => [
-                'result', 'pending', 'rejected', 'fulfilled'
-            ].forEach(i => this._eventBus.addEventHandler(valueChanged(i, k), sub))
+                'result', 'pending', 'rejected', 'fulfilled', 'error'
+            ].forEach(i => this._eventBus.addEventHandler(valueChanged(i, k), sub)),
+            STATES: createPromiseStates(k)
         }]).reduce(objMapReducer, {})
 
         /**

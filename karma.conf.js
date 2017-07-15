@@ -15,6 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+        'node_modules/babel-polyfill/dist/polyfill.js',
       'src/**/*.js',
       'test/**/*.js'
     ],
@@ -43,7 +44,7 @@ module.exports = function(config) {
     reporters: ['progress', 'coverage'],
 
       coverageReporter: {
-        type: 'html',
+        type: process.env.dev === 'true' ? 'lcov': 'text',
           dir: 'coverage/'
       },
 

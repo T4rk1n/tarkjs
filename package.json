@@ -4,8 +4,8 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "test-watch": "cross-env NODE_ENV=test karma start karma.conf.js",
-    "test": "cross-env NODE_ENV=test karma start karma.conf.js",
+    "test-watch": "cross-env NODE_ENV=test dev=true karma start karma.conf.js",
+    "test": "cross-env NODE_ENV=test karma start karma.conf.js --single-run",
     "build": "babel src --out-dir lib --source-maps",
     "watch": "babel -s inline -d lib -w src",
     "doc": "esdoc"

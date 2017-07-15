@@ -1,7 +1,6 @@
 /**
  * Created by T4rk on 7/14/2017.
  */
-import babel from 'babel-polyfill'  // This is for phantomjs Promise
 import { PromiseStore } from '../src/persistance/mem-stores'
 import { EventBus, valueChanged } from '../src/event-bus/event-bus'
 
@@ -27,6 +26,8 @@ describe('Test PromiseStore', () => {
 
 
     it('Test the store promise actions handlers',(done) => {
+        const suber = (e) => expect('to not be called').toBeNull()
+
         eventBus.addEventHandler('fake_fulfilled', (value) => {
             const { result } = store.actionStore.fake.store
             expect(result).toBe('hello')
@@ -57,11 +58,10 @@ describe('Test PromiseStore', () => {
             }
         })
 
+        store.subscribe('fake', suber)
+        store.unsubscribe('fake', suber)
+
         store.actions.fake({fakeReject: true, delay: 1000})
         store.actions.fake({pay: 'hello', delay: 500})
     })
-})
-
-describe('Test SocketStore', () => {
-
 })

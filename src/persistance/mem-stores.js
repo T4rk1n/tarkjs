@@ -147,6 +147,19 @@ export class PromiseStore {
         const states = [fulfilled(action), pending(action), rejected(action)]
         states.forEach(s  => this._eventBus.addEventHandler(s, sub))
     }
+
+    /**
+     * Remove the handler from the internal {@link EventBus}.
+     * @param {!string} action
+     * @param {!function} sub
+     */
+    unsubscribe(action, sub) {
+        [
+            'result', 'pending', 'rejected', 'fulfilled', 'error'
+        ].forEach(s => this._eventBus.removeEventHandler(valueChanged(s, action), sub))
+        const states = [fulfilled(action), pending(action), rejected(action)]
+        states.forEach(s  => this._eventBus.removeEventHandler(s, sub))
+    }
 }
 
 /**
@@ -174,8 +187,6 @@ const defaultSocketStoreOptions = {
     transformMessage: (data) => data
 }
 
-const formatMessageReceived = (socketName) => `${socketName}_message_received`
-
 /**
  * Store the messages received by a socket and send events to handlers.
  */
@@ -190,7 +201,7 @@ export class SocketStore {
         } = {...defaultSocketStoreOptions, ...options}
         this._eventBus = eventBus || new EventBus()
         /**
-         * The name of the socket, if null take the url
+         * The name of the socket, if null take the url and events will have strange name but still valid.
          * @type {string}
          */
         this.socketName = socketName || url
@@ -241,15 +252,24 @@ export class SocketStore {
     start() {
         //noinspection JSCheckFunctionSignatures
         this._socket = new WebSocket(this.url, this.protocols)
-        this._socket.onopen = this.onOpen
-        this._socket.onerror = this.onError
-        this._socket.onclose = this.onClose
+        this._socket.onopen = (e) => {
+            this.onOpen(e)
+            this._eventBus.dispatch({event: this.socket_open, payload: e})
+        }
+        this._socket.onerror = (e) => {
+            this.onError(e)
+            this._eventBus.dispatch({event: this.socket_error, payload: e})
+        }
+        this._socket.onclose = (e) => {
+            this.onClose(e)
+            this._eventBus.dispatch({event: this.socket_close, payload: e})
+        }
         this._socket.onmessage = (event) => {
             const data = this.transformMessage(event.data)
             // emits change events - remove the notifier as it is redundant ?
             this.store.messages = this.store.messages.pushBack(data)
             this._eventBus.dispatch({
-                event: formatMessageReceived(this.socketName),
+                event: this.socket_message_received,
                 payload: {data, store: this.store.messages}
             })
         }
@@ -278,6 +298,19 @@ export class SocketStore {
      * @param {function(e: TEvent)} sub
      */
     subscribe(sub) {
-        this._eventBus.addEventHandler(formatMessageReceived(this.socketName), sub)
+        this._eventBus.addEventHandler(this.socket_message_received, sub)
     }
+
+    /**
+     * Remove the handler from the internal {@link EventBus}.
+     * @param {!function} sub
+     */
+    unsubscribe(sub) {
+        this._eventBus.removeEventHandler(this.socket_message_received, sub)
+    }
+
+    get socket_close() { return `${this.socketName}_close` }
+    get socket_open() { return `${this.socketName}_open` }
+    get socket_error() { return `${this.socketName}_error` }
+    get socket_message_received() { return `${this.socketName}_message_received` }
 }

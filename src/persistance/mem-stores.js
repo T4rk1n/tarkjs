@@ -177,7 +177,7 @@ const defaultSocketStoreOptions = {
 const formatMessageReceived = (socketName) => `${socketName}_message_received`
 
 /**
- * Store the messages received by a socket.
+ * Store the messages received by a socket and send events to handlers.
  */
 export class SocketStore {
     /**

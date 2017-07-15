@@ -4,6 +4,7 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
+    "test-watch": "cross-env NODE_ENV=test karma start karma.conf.js",
     "test": "cross-env NODE_ENV=test karma start karma.conf.js",
     "build": "babel src --out-dir lib --source-maps",
     "watch": "babel -s inline -d lib -w src",
@@ -27,6 +28,7 @@
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-polyfill": "^6.23.0",
     "babel-preset-env": "^1.5.2",
     "babelify": "^7.3.0",
     "browserify": "^14.4.0",
@@ -39,6 +41,7 @@
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
     "watchify": "^3.9.0"
   },
   "dependencies": {}

@@ -1,12 +1,13 @@
 /**
  * Created by T4rk on 7/14/2017.
  */
+import babel from 'babel-polyfill'  // This is for phantomjs Promise
 import { PromiseStore } from '../src/persistance/mem-stores'
 import { EventBus, valueChanged } from '../src/event-bus/event-bus'
 
 const eventBus = new EventBus()
 
-describe('Test the PromiseStore', () => {
+describe('Test PromiseStore', () => {
     let store
     let prom
 
@@ -61,3 +62,6 @@ describe('Test the PromiseStore', () => {
     })
 })
 
+describe('Test SocketStore', () => {
+
+})

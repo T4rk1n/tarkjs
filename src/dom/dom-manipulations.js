@@ -16,10 +16,23 @@ export const setElementAttributes = (elem, attributes) => objItems(attributes)
  */
 export const getHead = () => document.querySelector('head')
 
+/**
+ * @typedef {Object} CreateElementOptions
+ * @property {string} [elementType='div'] The string representation of an html tag without the `<>`
+ * @property {Object} [attributes={}] Attributes to set on the element before inserting in the dom.
+ * @property {string} [innerHtml=''] Set the inner html before inserting in the dom.
+ * @property {boolean} [front=false] Insert as first child of the container.
+ * @property {function} [onload] Callback when the element has been loaded.
+ */
+
+/**
+ * @type {CreateElementOptions}
+ */
 const defaultCreateElementOptions = {
     elementType: 'div',
     attributes: {},
     innerHtml: '',
+    front: false,
     onload: () => null
 }
 
@@ -27,19 +40,22 @@ const defaultCreateElementOptions = {
  * Create an element only if it doesn't already exist.
  * @param {!Element} container the parent to append the new element to.
  * @param {!string} elementId unique id of the element.
- * @param {?Object} options
+ * @param {CreateElementOptions} [options]
  * @return {Element} The created or found element.
  */
 export const createElement = (container, elementId, options=defaultCreateElementOptions) => {
     let element = document.getElementById(elementId)
     if (!element) {
-        const { elementType, attributes, innerHtml, onload } = {...defaultCreateElementOptions, ...options}
+        const { elementType, attributes, innerHtml, onload, front } = {...defaultCreateElementOptions, ...options}
         element = document.createElement(elementType)
         element.id = elementId
         if (innerHtml) element.innerHTML = innerHtml
         element.onload = onload
         setElementAttributes(element, attributes)
-        container.appendChild(element)
+        if (front)
+            container.insertBefore(element, container.firstChild)
+        else
+            container.appendChild(element)
     }
     return element
 }

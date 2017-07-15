@@ -12,8 +12,9 @@ const rejected = (action) => `${action}_rejected`
 const pending = (action) => `${action}_pending`
 
 /**
- *
+ * Create an object with all the states of a promise.
  * @param {string} action
+ * @return {{base: string, fulfilled: string, rejected: string, pending: string}}
  */
 export const createPromiseStates = (action) => ({
     base: action,
@@ -189,6 +190,7 @@ export class SocketStore {
         } = {...defaultSocketStoreOptions, ...options}
         this._eventBus = eventBus || new EventBus()
         /**
+         * The name of the socket, if null take the url
          * @type {string}
          */
         this.socketName = socketName || url
@@ -211,18 +213,22 @@ export class SocketStore {
          */
         this._socket = null
         /**
+         * Socket event handler, must set before start.
          * @type {function(e: *)}
          */
         this.onOpen = onOpen
         /**
+         * Socket event handler, must set before start.
          * @type {function(e: *)}
          */
         this.onError = onError
         /**
+         * Socket event handler, must set before start.
          * @type {function(e: *)}
          */
         this.onClose = onClose
         /**
+         * Transform the message before inserting the data in the store
          * @type {function(data: *)}
          */
         this.transformMessage = transformMessage
@@ -237,9 +243,11 @@ export class SocketStore {
         this._socket = new WebSocket(this.url, this.protocols)
         this._socket.onopen = this.onOpen
         this._socket.onerror = this.onError
+        this._socket.onclose = this.onClose
         this._socket.onmessage = (event) => {
             const data = this.transformMessage(event.data)
-            this.store.messages = this.store.messages.pushBack(data) // emits change
+            // emits change events - remove the notifier as it is redundant ?
+            this.store.messages = this.store.messages.pushBack(data)
             this._eventBus.dispatch({
                 event: formatMessageReceived(this.socketName),
                 payload: {data, store: this.store.messages}
@@ -258,7 +266,7 @@ export class SocketStore {
 
     /**
      * Close the internal socket.
-     * @param {Object} [options={code: 1000, reason: ''}]
+     * @param {{code: number, reason: string}} [options={code: 1000, reason: ''}] optional reason
      */
     close(options={code: 1000, reason: ''}) {
         if (this._socket && this._socket.readyState === WebSocket.OPEN) this._socket.close(options.code, options.reason)
@@ -266,6 +274,7 @@ export class SocketStore {
 
     /**
      * Subscribe to change in the store.
+     * Only one event is subscribed to `${socketName}_message_received`
      * @param {function(e: TEvent)} sub
      */
     subscribe(sub) {

@@ -47,7 +47,7 @@ module.exports = function(config) {
         coverageReporter: {
             // eslint-disable-next-line no-undef
             type: process.env.dev === 'true' ? 'lcov': 'lcovonly',
-            dir: 'coverage/'
+            dir: './cc-test-reporter'
         },
 
         // web server port

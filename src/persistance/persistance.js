@@ -72,7 +72,7 @@ export class BaseBrowserStorage extends BaseStorage {
      * Set storage item with json option.
      * @override
      * @param {string} key
-     * @param {string|Array|Object} value
+     * @param {*} value
      * @param {Object} [options={isJson: false}]
      */
     setStorageItem(key, value, options={isJson: false}) {
@@ -94,9 +94,6 @@ export class BaseBrowserStorage extends BaseStorage {
  * Storage using window.sessionStorage, clear on browser exit.
  */
 export class BrowserSessionStorage extends BaseBrowserStorage {
-    /**
-     *
-     */
     constructor() {
         super(window.sessionStorage)
     }

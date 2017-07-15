@@ -143,7 +143,7 @@ export class PromiseStore {
     subscribe(action, sub) {
         this.actionStore[action].subscribe(sub)
         const states = [fulfilled(action), pending(action), rejected(action)]
-        states.forEach(s  => this._eventBus.addEventHandler(s, sub))
+        states.forEach(s  => this._eventBus.addEventHandler(states, ))
     }
 }
 
@@ -222,7 +222,7 @@ export class SocketStore {
          */
         this.onClose = onClose
         /**
-         * @type {function(data: *):!*}
+         * @type {function(data: *)}
          */
         this.transformMessage = transformMessage
         if (start) this.start()
@@ -248,7 +248,7 @@ export class SocketStore {
 
     /**
      * Send a message to the server.
-     * @param {string|Blob} message
+     * @param {string} message
      */
     send(message) {
         if (!this._socket || this._socket.readyState !== WebSocket.OPEN) throw new Error('Socket not open')
@@ -257,7 +257,7 @@ export class SocketStore {
 
     /**
      * Close the internal socket.
-     * @param {{code: number, reason: string}} [options={code: 1000, reason: ''}]
+     * @param {Object} [options={code: 1000, reason: ''}]
      */
     close(options={code: 1000, reason: ''}) {
         if (this._socket && this._socket.readyState === WebSocket.OPEN) this._socket.close(options.code, options.reason)

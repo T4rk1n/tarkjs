@@ -80,8 +80,8 @@ export class EventBus {
  */
 
 /**
- * @param {?string} prefix
  * @param {string} key
+ * @param {?string} prefix
  * @return {string}
  */
 export const valueChanged = (key, prefix=null) => `${prefix ? `${prefix}_`: ''}${key}_value_changed`

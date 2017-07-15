@@ -49,13 +49,14 @@ export class EventBus {
     dispatch({event, payload}) {
         // TODO make the event cancelable.
         const handlers = this._handlers[event]
+        let canceled = false
         if (!handlers || handlers.length < 1) return
         let i = 0
         const handle = () => {
             const h = handlers[i]
-            h({event, payload})
+            h({event, payload, cancel: ()=> canceled = true})
             i++
-            if (i < handlers.length) promiseWrap(handle)
+            if (!canceled && i < handlers.length) promiseWrap(handle)
         }
         return promiseWrap(handle)
     }

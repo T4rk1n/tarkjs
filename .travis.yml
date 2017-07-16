@@ -15,4 +15,4 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 after_script:
-  - ./cc-test-reporter after-build --file ./coverage/lcov.info --exit-code $TRAVIS_TEST_RESULT
+  - cat ./coverage/lcov.info | ./cc-test-reporter after-build -t lcov --exit-code $TRAVIS_TEST_RESULT

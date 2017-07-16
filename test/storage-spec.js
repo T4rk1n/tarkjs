@@ -27,6 +27,8 @@ describe('Test persistent storage' , () => {
         expect(cookies.getStorageItem('cooktest')).toBe('have a cookie')
         expect(noDefined).toBeUndefined()
         expect(secondcook).toBe('cookiemaster')
+        cookies.removeStorageItem('secondcook')
+        expect(cookies.getStorageItem('secondcook')).toBeUndefined()
     })
 })
 

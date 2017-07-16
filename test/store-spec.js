@@ -3,13 +3,14 @@
  */
 import { PromiseStore } from '../src/persistance/mem-stores'
 import { EventBus, valueChanged } from '../src/event-bus/event-bus'
+import {arrSum} from '../src/extensions/arr-extensions'
 
 const eventBus = new EventBus()
 
 describe('Test PromiseStore', () => {
     const store = new PromiseStore({
         fake: ({pay, fakeReject, delay })=> new Promise((resolve, reject) => {
-            setTimeout(() => fakeReject ? reject('rejected') : resolve(pay) , delay)
+            setTimeout(() => fakeReject ? reject('rejected') : resolve(pay), delay)
         })
     }, eventBus)
 
@@ -29,6 +30,15 @@ describe('Test PromiseStore', () => {
         })
         eventBus.dispatch({event: 'async'})
         expect(check).toBeFalsy()
+    })
+
+    it('Test the accumulation of events return values', (done) => {
+        eventBus.addEventHandler('accumulate', (e) => e.payload)
+        eventBus.addEventHandler('accumulate', (e) => arrSum(e.acc) + 1)
+        eventBus.dispatch({event: 'accumulate', payload: 10}).promise.then((acc) => {
+            expect(arrSum(acc)).toBe(21)
+            done()
+        })
     })
 
     it('Test the store promise actions handlers',(done) => {

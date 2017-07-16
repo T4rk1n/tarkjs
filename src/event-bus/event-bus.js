@@ -4,6 +4,7 @@
 
 import { promiseWrap } from '../extensions/prom-extensions'
 import { objCopy } from '../extensions/obj-extensions'
+import { arrIncludes } from '../extensions/arr-extensions'
 
 /**
  * Simple object with event type and optional payload.
@@ -13,9 +14,19 @@ import { objCopy } from '../extensions/obj-extensions'
  */
 
 /**
+ * @typedef {TEvent} TEventHandlerParams
+ * @property {function} cancel function to cancel the next events dispatch
+ * @property {Array} acc Accumulator of the return values of the previous handlers.
+ */
+
+/**
+ * @typedef {function} TEventHandler
+ * @param {!TEventHandlerParams} params
+ */
+
+/**
  * EventBus is an event dispatcher that wraps handlers in promises.
- * Used to replace the custom event of the dom in any setting
- * since it is pure vanilla js.
+ *
  * @example
  * const bus = new EventBus()
  * const handle = (payload) => {
@@ -32,12 +43,14 @@ export class EventBus {
     /**
      * Add an handler function to an event handler list.
      * @param {string} event
-     * @param {function} handler
+     * @param {TEventHandler} handler
      */
     addEventHandler(event, handler) {
         const handlers = this._handlers[event] || []
-        handlers.push(handler)
-        this._handlers[event] = handlers
+        if (!arrIncludes(handlers, handler)) {
+            handlers.push(handler)
+            this._handlers[event] = handlers
+        }
     }
 
     //noinspection JSCommentMatchesSignature,JSValidateJSDoc
@@ -54,11 +67,12 @@ export class EventBus {
             const handlers = this._handlers[event]
             if (!handlers || handlers.length < 1) return
             let i = 0
+            const acc = []
             while (i < handlers.length && !canceled) {
-                handlers[i]({event, payload, cancel})
+                acc.push(handlers[i]({event, payload, cancel, acc}))
                 i++
             }
-            return !canceled
+            return canceled ? null : acc
         }, {rejectNull: true, nullMessage: `Dispatch ${event} was canceled`})
         p.cancel = cancel
         return p
@@ -70,7 +84,6 @@ export class EventBus {
      * @param {function} handler
      */
     removeEventHandler(event, handler) {
-        // TODO assure the event is not currently dispatching / cancel.
         const handlers = this._handlers[event]
         if (!handlers) return
         this._handlers[event] = handlers.filter(h => h !== handler)

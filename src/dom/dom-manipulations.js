@@ -160,7 +160,7 @@ export const getUrlParams = () => window.location.search.substring(1).split('&')
  * @param {string} [type="text/plain;charset=utf-8;"] a valid mimetype.
  * @param {boolean} [revoke=true] revoke the url object created to release memory.
  */
-export const createDownload = (filename, content, type="text/plain;charset=utf-8;", revoke=true) => {
+export const createDownload = (filename, content, type='text/plain;charset=utf-8;', revoke=true) => {
     const blob = new Blob([content], {type})
     if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveOrOpenBlob(blob, filename)

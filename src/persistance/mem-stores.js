@@ -3,7 +3,7 @@
  */
 
 import { EventBus, valueChanged, changeNotifier } from '../event-bus/event-bus'
-import { toCancelable } from '../prom'
+import { toCancelable } from '../extensions/prom-extensions'
 import { objMapReducer } from '../extensions/obj-extensions'
 import { Deque } from '../containers/deque'
 
@@ -123,7 +123,7 @@ export class PromiseStore {
                 store.result = event.payload
                 store.pending = false
             })
-            this._eventBus.addEventHandler(pending(k), (_) => {
+            this._eventBus.addEventHandler(pending(k), () => {
                 store.pending = true
                 store.rejected = false
                 store.fulfilled = false

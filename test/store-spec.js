@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * Created by T4rk on 7/14/2017.
  */
@@ -9,7 +8,6 @@ const eventBus = new EventBus()
 
 describe('Test PromiseStore', () => {
     let store
-    let prom
 
     beforeEach(() => {
         spyOn(eventBus, 'dispatch').and.callThrough()
@@ -18,7 +16,7 @@ describe('Test PromiseStore', () => {
         store = new PromiseStore({
             fake: ({pay, fakeReject, delay })=> new Promise((resolve, reject) => {
                 setTimeout(() => fakeReject ? reject('rejected') : resolve(pay) , delay)
-        }) }, eventBus)
+            }) }, eventBus)
     })
 
     it('Test the store add event handlers to eventBus', () => {
@@ -40,22 +38,22 @@ describe('Test PromiseStore', () => {
             // TODO How to test the valueChange ? the events are called even if the oldValue === newValue.
             // I don't want to change the notifier setters to include the check for various reasons.
             switch (e.event) {
-                case valueChanged('pending', 'fake'):
-                    break
-                case valueChanged('fulfilled', 'fake'):
-                    break
-                case valueChanged('rejected', 'fake'):
-                    break
-                case 'fake_fulfilled':
-                    expect('to be canceled').toBeNull()  // should be canceled.
-                    break
-                case 'fake_rejected':
-                    expect(e.payload).toBe('rejected')
-                    done()
-                    break
-                case 'fake_pending':
-                    expect(e.payload).toBeUndefined()
-                    break
+            case valueChanged('pending', 'fake'):
+                break
+            case valueChanged('fulfilled', 'fake'):
+                break
+            case valueChanged('rejected', 'fake'):
+                break
+            case 'fake_fulfilled':
+                expect('to be canceled').toBeNull()  // should be canceled.
+                break
+            case 'fake_rejected':
+                expect(e.payload).toBe('rejected')
+                done()
+                break
+            case 'fake_pending':
+                expect(e.payload).toBeUndefined()
+                break
             }
         })
 
@@ -66,3 +64,5 @@ describe('Test PromiseStore', () => {
         store.actions.fake({pay: 'hello', delay: 500})
     })
 })
+
+

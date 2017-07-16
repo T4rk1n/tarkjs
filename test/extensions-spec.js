@@ -2,8 +2,9 @@
  * Created by T4rk on 7/13/2017.
  */
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
-import { arrChunk, arrCopy, arrSum } from '../src/extensions/arr-extensions'
+import { arrChunk, arrSum } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
+import { toCancelable } from '../src/extensions/prom-extensions'
 
 describe('Test obj-extensions', () => {
     const items = {
@@ -61,6 +62,20 @@ describe('test SeededRandom', () => {
     })
 })
 
-describe('test str-extensions', () => {
-
+describe('test prom', () => {
+    it('Should be canceled', (done) => {
+        const p = toCancelable(new Promise((resolve, reject) => {
+            setTimeout(() => resolve('hello'), 2000)
+        }))
+        p.promise.catch(() => done()) // phantomjs is bad and will say unhandled promise rejection.
+        p.promise.then(() => expect('to be canceled').toBeNull())
+        p.cancel()
+    })
+    it('Should be timeout', (done) => {
+        const p = toCancelable(new Promise((resolve, reject) => {
+            setTimeout(()=> resolve('hello'), 2000)
+        }), 200)
+        p.promise.then(() => expect('to be canceled').toBeNull())
+        p.promise.catch(() => done())
+    })
 })

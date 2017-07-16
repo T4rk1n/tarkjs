@@ -49,7 +49,7 @@ export class BaseBrowserStorage extends BaseStorage {
      */
     constructor(storage) {
         super()
-        if (typeof window === 'undefined') throw new TypeError("Not in browser but using browser storage ?")
+        if (typeof window === 'undefined') throw new TypeError('Not in browser but using browser storage ?')
         this._storage = storage
     }
 
@@ -82,7 +82,7 @@ export class BaseBrowserStorage extends BaseStorage {
 
     /**
      * Remove the item from storage.
-     * @param {!string} key
+     * @param {string} key
      * @param {Object} [options]
      */
     removeStorageItem(key, options={}) {
@@ -116,7 +116,7 @@ export class CookieStorage extends BaseStorage {
     /**
      * Get a storage item from the cookies using a regex.
      * @override
-     * @param {!string} key
+     * @param {string} key
      * @param {?Object} options
      * @return {*}
      */
@@ -128,20 +128,20 @@ export class CookieStorage extends BaseStorage {
     /**
      * Set a cookie.
      * @override
-     * @param {!string} key
+     * @param {string} key
      * @param {*} value
      * @param {Object} [options={expiration:null, cookiepath:null}]
      */
     setStorageItem(key, value, options={expiration:null, cookiepath:null}) {
         const { expiration, cookiepath } = options
-        document.cookie = `${key}=${value};path=${cookiepath || ''} ;expires=${expiration || ""}} }`
+        document.cookie = `${key}=${value};path=${cookiepath || ''} ;expires=${expiration || ''}} }`
     }
 
     /**
      * Set cookie expires to
      * @override
-     * @param {!string} key
-     * @param {?Object} options
+     * @param {string} key
+     * @param {Object} options
      */
     removeStorageItem(key, options={}) {
         document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC;`

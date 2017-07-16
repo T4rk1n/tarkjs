@@ -16,3 +16,5 @@ before_script:
   - ./cc-test-reporter before-build
 after_script:
   - cat ./coverage/lcov.info | ./cc-test-reporter after-build -t lcov --exit-code $TRAVIS_TEST_RESULT
+after_success:
+  - ./update-docs.sh

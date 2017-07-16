@@ -10,6 +10,8 @@
 
 /**
  * Wrap a function into a cancelable promise.
+ * @deprecated After testing, this is a blocking call so there is no point in keeping it,.
+ * Use toCancelable instead, this is not cancelable.
  * @param {!function} func function to call with no params.
  * @param {?Object} [options={rejectNull: false}]
  * @return {CancelablePromise}
@@ -28,22 +30,26 @@ export const promiseWrap = (func, options={rejectNull: false}) => {
         else if (canceled) reject('Promise was canceled')
         else resolve(result)
     })
+    const cancel = () => { canceled = true }
     return {
         promise,
-        cancel() { canceled = true }
+        cancel
     }
 }
 
 /**
  * Wrap a promise as cancelable.
  * @param  {!Promise} promise
+ * @param {?int} timeout
  * @return {CancelablePromise}
  */
-export const toCancelable = (promise) => {
+export const toCancelable = (promise, timeout=null) => {
     let canceled = false
+    const dt = new Date()
     const wrap = new Promise((resolve, reject) => {
         promise.then(value => {
-            if (canceled) reject("Promise was canceled")
+            if (canceled) reject('Promise was canceled')
+            else if (timeout && new Date() - dt >= timeout) reject('Timed-out')
             else resolve(value)
         }).catch(err => reject(err))
     })

@@ -2,7 +2,7 @@
  * Created by T4rk on 6/30/2017.
  */
 
-import { promiseWrap } from '../prom'
+import { promiseWrap } from '../extensions/prom-extensions'
 import { objCopy } from '../extensions/obj-extensions'
 
 /**
@@ -43,22 +43,22 @@ export class EventBus {
     //noinspection JSCommentMatchesSignature,JSValidateJSDoc
     /**
      * Dispatch the event to all the handlers in the order they were added.
-     * Handlers receives payload as param and are wrapped in recursive tail promises.
+     * Handlers receives payload as param and are wrapped in a recursive tail.
      * @param {TEvent} param
      */
     dispatch({event, payload}) {
-        // TODO make the event cancelable.
         const handlers = this._handlers[event]
         let canceled = false
         if (!handlers || handlers.length < 1) return
         let i = 0
+        const cancel = () => canceled = true
         const handle = () => {
             const h = handlers[i]
-            h({event, payload, cancel: ()=> canceled = true})
+            h({event, payload, cancel})
             i++
-            if (!canceled && i < handlers.length) promiseWrap(handle)
+            if (!canceled && i < handlers.length) handle()
         }
-        return promiseWrap(handle)
+        handle()
     }
 
     /**

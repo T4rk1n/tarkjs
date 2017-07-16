@@ -2,7 +2,7 @@
  * Created by Phil on 7/12/2017.
  */
 
-import { objItems } from "../extensions/obj-extensions"
+import { objItems } from '../extensions/obj-extensions'
 
 const jsonPattern = /json/i
 
@@ -74,7 +74,7 @@ export const xhrRequest = (url, options=defaultXhrOptions) => new Promise((resol
     xhr.onreadystatechange = () => {
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             let responseValue = xhr.response
-            if (jsonPattern.test(xhr.getResponseHeader("Content-Type"))) {
+            if (jsonPattern.test(xhr.getResponseHeader('Content-Type'))) {
                 responseValue = JSON.parse(xhr.responseText)
             }
             resolve(responseValue)

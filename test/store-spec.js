@@ -21,13 +21,13 @@ describe('Test PromiseStore', () => {
     it('Test the dispatch of eventBus is async', (done) => {
         // This will fail under a severely outdated environment.
         let check = false
-        eventBus.addEventHandler('anewone', () => {
+        eventBus.addEventHandler('async', () => {
             let dt = new Date()
             while ((new Date()) - dt <= 300) { /**/ }
             check = true
             done()
         })
-        eventBus.dispatch({event: 'anewone'})
+        eventBus.dispatch({event: 'async'})
         expect(check).toBeFalsy()
     })
 

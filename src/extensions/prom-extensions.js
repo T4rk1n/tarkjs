@@ -9,6 +9,19 @@
  */
 
 /**
+ * @type {Object} PromiseError
+ * @property {!string} error
+ * @property {?string} message
+ */
+
+/**
+ * @type {Object} PromiseWrapOptions
+ * @property {boolean} [rejectNull=false]
+ * @property {?int} [timeout=null]
+ * @property {string} [nullMessage=null]
+ */
+
+/**
  * Async Promise function wrap
  *
  * Four options may happen:
@@ -21,9 +34,9 @@
  * @param {?Object} [options={rejectNull: false, timeout: null}]
  * @return {CancelablePromise}
  */
-export const promiseWrap = (func, options={rejectNull: false, timeout: null}) => {
+export const promiseWrap = (func, options={rejectNull: false, timeout: null, nullMessage }) => {
     let canceled = false, reqId = -1
-    const { rejectNull, timeout } = options
+    const { rejectNull, timeout, nullMessage } = options
     const promise = new Promise((resolve, reject) => {
         const handle = () => {
             let result
@@ -32,8 +45,8 @@ export const promiseWrap = (func, options={rejectNull: false, timeout: null}) =>
             } catch (e) {
                 return reject(e)
             }
-            if (rejectNull && !result) reject('Expected promise result is null')
-            else if (canceled) reject('Promise was canceled')
+            if (rejectNull && !result) reject({error:'null_result', message: nullMessage || 'Expected promise result is null'})
+            else if (canceled) reject({error: 'canceled', message: 'Promise was canceled'})
             else resolve(result)
         }
         if (window.requestIdleCallback) reqId = window.requestIdleCallback(handle, {timeout})   // chrome >= 47 && opera >= 34

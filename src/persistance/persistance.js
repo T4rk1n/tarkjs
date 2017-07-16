@@ -82,7 +82,7 @@ export class BaseBrowserStorage extends BaseStorage {
 
     /**
      * Remove the item from storage.
-     * @param {string} key
+     * @param {!string} key
      * @param {Object} [options]
      */
     removeStorageItem(key, options={}) {
@@ -116,19 +116,21 @@ export class CookieStorage extends BaseStorage {
     /**
      * Get a storage item from the cookies using a regex.
      * @override
-     * @param {string} key
+     * @param {!string} key
      * @param {?Object} options
      * @return {*}
      */
     getStorageItem(key, options={}) {
+        /* Think I modified the regex, now it doesn't work and I am lazy.
         const cook = document.cookie.match(new RegExp(`(^|;)\\s*${key}\\s*=\\s*([^;]+)`, 'ig'))
-        return cook ? cook.pop() : ''
+        return cook ? cook.pop() : '' */
+        return CookieStorage.getAll()[key]
     }
 
     /**
      * Set a cookie.
      * @override
-     * @param {string} key
+     * @param {!string} key
      * @param {*} value
      * @param {Object} [options={expiration:null, cookiepath:null}]
      */
@@ -140,8 +142,8 @@ export class CookieStorage extends BaseStorage {
     /**
      * Set cookie expires to
      * @override
-     * @param {string} key
-     * @param {Object} options
+     * @param {!string} key
+     * @param {?Object} options
      */
     removeStorageItem(key, options={}) {
         document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC;`

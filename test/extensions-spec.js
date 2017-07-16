@@ -5,6 +5,8 @@ import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/e
 import { arrChunk, arrSum } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
 import { toCancelable } from '../src/extensions/prom-extensions'
+import { findAllMatches } from '../src/extensions/str-extensions'
+
 
 describe('Test obj-extensions', () => {
     const items = {
@@ -62,7 +64,7 @@ describe('test SeededRandom', () => {
     })
 })
 
-describe('test prom', () => {
+describe('Test prom-extensions', () => {
     it('Should be canceled', (done) => {
         const p = toCancelable(new Promise((resolve, reject) => {
             setTimeout(() => resolve('hello'), 2000)
@@ -78,4 +80,12 @@ describe('test prom', () => {
         p.promise.then(() => expect('to be canceled').toBeNull())
         p.promise.catch(() => done())
     })
+})
+
+describe('Test str-extensions', () => {
+    it('Should find every number', () => {
+        const m = findAllMatches('find1 n23 a22 3431 nonumber 32', new RegExp('([0-9])', 'g'), {raw: true})
+        expect(m.length).toBe(11)
+    })
+
 })

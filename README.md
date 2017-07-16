@@ -6,6 +6,11 @@ Collection of functions and objects.
 [![Test Coverage](https://codeclimate.com/github/T4rk1n/tarkjs/badges/coverage.svg)](https://codeclimate.com/github/T4rk1n/tarkjs/coverage)
 [![Code Climate](https://codeclimate.com/github/T4rk1n/tarkjs/badges/gpa.svg)](https://codeclimate.com/github/T4rk1n/tarkjs/)
 [![esdocs](https://doc.esdoc.org/github.com/T4rk1n/tarkjs/badge.svg)](https://doc.esdoc.org/github.com/T4rk1n/tarkjs/)
+[![npm version](https://badge.fury.io/js/tarkjs.svg)](https://badge.fury.io/js/tarkjs)
+[![Known Vulnerabilities](https://snyk.io/test/github/T4rk1n/tarkjs/badge.svg)](https://snyk.io/test/github/T4rk1n/tarkjs)
+[![Dependencies](https://david-dm.org/T4rk1n/tarkjs.svg)](https://david-dm.org/T4rk1n/tarkjs)
+[![devDependencies Status](https://david-dm.org/T4rk1n/tarkjs/dev-status.svg)](https://david-dm.org/T4rk1n/tarkjs?type=dev)
+[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)](http://opensource.org/licenses/MIT)
 
 ### Installation
 
@@ -17,7 +22,7 @@ ES6 imports.
 
 `import * as tarkjs from 'tarkjs' `
 
-There is no default export.
+There is no default export. You need to babel-polyfill for old browser support.
 
 #### Custom Events and Stores
 
@@ -33,7 +38,7 @@ import { EventBus, changeNotifier } from 'tarkjs'
 const eventBus = new EventBus()
 
 // Create an object that send events when it's properties are set.
-const notifier = changeNotifier({message: 'hello'})
+const notifier = changeNotifier({message: 'hello'}, eventBus)
 
 // attach an handler
 eventBus.addEventHandler('message_value_changed', (e) => {

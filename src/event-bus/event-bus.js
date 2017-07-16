@@ -45,6 +45,7 @@ export class EventBus {
      * Dispatch the event to all the handlers in the order they were added.
      * Handlers receives the payload as param and can cancel the next ones.
      * @param {TEvent} param
+     * @return {CancelablePromise}
      */
     dispatch({event, payload}) {
         let canceled = false
@@ -57,7 +58,8 @@ export class EventBus {
                 handlers[i]({event, payload, cancel})
                 i++
             }
-        })
+            return !canceled
+        }, {rejectNull: true, nullMessage: `Dispatch ${event} was canceled`})
         p.cancel = cancel
         return p
     }

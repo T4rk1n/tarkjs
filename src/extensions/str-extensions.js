@@ -15,7 +15,7 @@ const defaultFindAllOptions = {
 /**
  * Find all regex matches in a string.
  * @param {!string} str string to find matches.
- * @param {!RegExp} re
+ * @param {!RegExp} re be sure to set the g
  * @param {?FindAllOptions} [options={indexGet: 1, raw: true}]
  * @return {!Array}
  */

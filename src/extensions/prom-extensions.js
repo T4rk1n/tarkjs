@@ -9,31 +9,43 @@
  */
 
 /**
- * Wrap a function into a cancelable promise.
- * @deprecated After testing, this is a blocking call so there is no point in keeping it,.
- * Use toCancelable instead, this is not cancelable.
- * @param {!function} func function to call with no params.
- * @param {?Object} [options={rejectNull: false}]
+ * Async Promise function wrap
+ *
+ * Four options may happen:
+ * - requestIdleCallback for chrome >= 47 && opera >= 34
+ * - setImmediate for ie >= 10, Edge, PhantomJS
+ * - requestAnimationFrame if available
+ * - synchronous execution in worst case scenario
+ *
+ * @param {function} func the return of the function will be resolved.
+ * @param {?Object} [options={rejectNull: false, timeout: null}]
  * @return {CancelablePromise}
  */
-export const promiseWrap = (func, options={rejectNull: false}) => {
-    let canceled = false
+export const promiseWrap = (func, options={rejectNull: false, timeout: null}) => {
+    let canceled = false, reqId = -1
+    const { rejectNull, timeout } = options
     const promise = new Promise((resolve, reject) => {
-        const { rejectNull } = options
-        let result
-        try {
-            result = func()
-        } catch (e) {
-            return reject(e)
+        const handle = () => {
+            let result
+            try {
+                result = func()
+            } catch (e) {
+                return reject(e)
+            }
+            if (rejectNull && !result) reject('Expected promise result is null')
+            else if (canceled) reject('Promise was canceled')
+            else resolve(result)
         }
-        if (rejectNull && !result) reject('Expected promise result is null')
-        else if (canceled) reject('Promise was canceled')
-        else resolve(result)
+        if (window.requestIdleCallback) reqId = window.requestIdleCallback(handle, {timeout})   // chrome >= 47 && opera >= 34
+        else if (window.setImmediate) reqId = window.setImmediate(handle)                       // ie >= 10, Edge, PhantomJS
+        else if (window.requestAnimationFrame) reqId = window.requestAnimationFrame(handle)     // Some kind of async
+        else handle() // no async fail.
     })
-    const cancel = () => { canceled = true }
+    const cancel = () => canceled = true
     return {
         promise,
-        cancel
+        cancel,
+        reqId
     }
 }
 
@@ -58,3 +70,4 @@ export const toCancelable = (promise, timeout=null) => {
         cancel() { canceled = true }
     }
 }
+

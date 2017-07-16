@@ -43,22 +43,23 @@ export class EventBus {
     //noinspection JSCommentMatchesSignature,JSValidateJSDoc
     /**
      * Dispatch the event to all the handlers in the order they were added.
-     * Handlers receives payload as param and are wrapped in a recursive tail.
+     * Handlers receives the payload as param and can cancel the next ones.
      * @param {TEvent} param
      */
     dispatch({event, payload}) {
-        const handlers = this._handlers[event]
         let canceled = false
-        if (!handlers || handlers.length < 1) return
-        let i = 0
         const cancel = () => canceled = true
-        const handle = () => {
-            const h = handlers[i]
-            h({event, payload, cancel})
-            i++
-            if (!canceled && i < handlers.length) handle()
-        }
-        handle()
+        const p = promiseWrap(() => {
+            const handlers = this._handlers[event]
+            if (!handlers || handlers.length < 1) return
+            let i = 0
+            while (i < handlers.length && !canceled) {
+                handlers[i]({event, payload, cancel})
+                i++
+            }
+        })
+        p.cancel = cancel
+        return p
     }
 
     /**

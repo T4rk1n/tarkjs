@@ -7,22 +7,29 @@ import { EventBus, valueChanged } from '../src/event-bus/event-bus'
 const eventBus = new EventBus()
 
 describe('Test PromiseStore', () => {
-    let store
+    const store = new PromiseStore({
+        fake: ({pay, fakeReject, delay })=> new Promise((resolve, reject) => {
+            setTimeout(() => fakeReject ? reject('rejected') : resolve(pay) , delay)
+        })
+    }, eventBus)
 
     beforeEach(() => {
         spyOn(eventBus, 'dispatch').and.callThrough()
         spyOn(eventBus, 'addEventHandler').and.callThrough()
-
-        store = new PromiseStore({
-            fake: ({pay, fakeReject, delay })=> new Promise((resolve, reject) => {
-                setTimeout(() => fakeReject ? reject('rejected') : resolve(pay) , delay)
-            }) }, eventBus)
     })
 
-    it('Test the store add event handlers to eventBus', () => {
-        expect(eventBus.addEventHandler).toHaveBeenCalledTimes(3)
+    it('Test the dispatch of eventBus is async', (done) => {
+        // This will fail under a severely outdated environment.
+        let check = false
+        eventBus.addEventHandler('anewone', () => {
+            let dt = new Date()
+            while ((new Date()) - dt <= 300) { /**/ }
+            check = true
+            done()
+        })
+        eventBus.dispatch({event: 'anewone'})
+        expect(check).toBeFalsy()
     })
-
 
     it('Test the store promise actions handlers',(done) => {
         const suber = (e) => expect('to not be called').toBeNull()
@@ -62,6 +69,7 @@ describe('Test PromiseStore', () => {
 
         store.actions.fake({fakeReject: true, delay: 1000})
         store.actions.fake({pay: 'hello', delay: 500})
+        expect(eventBus.dispatch).toHaveBeenCalledTimes(2)
     })
 })
 

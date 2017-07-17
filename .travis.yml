@@ -1,5 +1,8 @@
+dist: trusty
+sudo: required
 env:
   global:
+    - CHROME_BIN=chromium-browser
     - CC_TEST_REPORTER_ID=49e6dcb16be9253f5653ff846522f8a24168dfc1e99e366f60fc94518bdc1e1c
     - GIT_COMMITTED_AT=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git log -1 --pretty=format:%ct; else git log -1 --skip 1 --pretty=format:%ct; fi)
 language: node_js
@@ -14,6 +17,7 @@ cache:
     - "node_modules"
 before_install:
   - chmod +x ./update-docs.sh
+  - google-chrome-stable --headless --no-sandbox --disable-gpu
 before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter

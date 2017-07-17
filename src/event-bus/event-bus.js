@@ -65,14 +65,14 @@ export class EventBus {
         const cancel = () => canceled = true
         const p = promiseWrap(() => {
             const handlers = this._handlers[event]
-            if (!handlers || handlers.length < 1) return
+            if (!handlers || handlers.length < 1) return []
             let i = 0
             const acc = []
             while (i < handlers.length && !canceled) {
                 acc.push(handlers[i]({event, payload, cancel, acc}))
                 i++
             }
-            return canceled ? null : acc
+            return canceled ? null : acc.filter(e => e)
         }, {rejectNull: true, nullMessage: `Dispatch ${event} was canceled`})
         p.cancel = cancel
         return p

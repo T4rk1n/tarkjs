@@ -16,9 +16,9 @@
 
 /**
  * @type {Object} PromiseWrapOptions
- * @property {boolean} [rejectNull=false]
- * @property {?int} [timeout=null]
- * @property {string} [nullMessage=null]
+ * @property {boolean} [rejectNull=false] Reject the return value of the wrapped function if null.
+ * @property {?int} [timeout=null] Only works for requestIdleCallback
+ * @property {string} [nullMessage=null] Message to include in the null_result error.
  */
 
 /**
@@ -31,10 +31,10 @@
  * - synchronous execution in worst case scenario
  *
  * @param {function} func the return of the function will be resolved.
- * @param {?Object} [options={rejectNull: false, timeout: null}]
+ * @param {?Object} [options={rejectNull: false, timeout: null, nullMessage}]
  * @return {CancelablePromise}
  */
-export const promiseWrap = (func, options={rejectNull: false, timeout: null, nullMessage }) => {
+export const promiseWrap = (func, options={rejectNull: false, timeout: null, nullMessage: '' }) => {
     let canceled = false, reqId = -1
     const { rejectNull, timeout, nullMessage } = options
     const promise = new Promise((resolve, reject) => {
@@ -73,8 +73,9 @@ export const toCancelable = (promise, timeout=null) => {
     const dt = new Date()
     const wrap = new Promise((resolve, reject) => {
         promise.then(value => {
-            if (canceled) reject('Promise was canceled')
-            else if (timeout && new Date() - dt >= timeout) reject('Timed-out')
+            if (canceled) reject({error: 'canceled', message: 'Promise was canceled'})
+            else if (timeout && new Date() - dt >= timeout)
+                reject({error: 'time_out', message: `Promise was resolved after timeout of ${timeout}`})
             else resolve(value)
         }).catch(err => reject(err))
     })

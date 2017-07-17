@@ -1,10 +1,11 @@
 /**
  * Created by T4rk on 7/16/2017.
  */
-import { BrowserLocalStorage, CookieStorage } from '../src/persistance/persistance'
+import { BrowserLocalStorage, BrowserSessionStorage, CookieStorage } from '../src/persistance/persistance'
 
 describe('Test persistent storage' , () => {
     const storage = new BrowserLocalStorage()
+    const storage2 = new BrowserSessionStorage()
     const cookies = new CookieStorage()
     beforeEach(() => {
         storage.setStorageItem('simplestring', 'simple')

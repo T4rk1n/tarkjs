@@ -11,7 +11,7 @@ module.exports = function(config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['browserify','jasmine'],
+        frameworks: ['browserify','jasmine', 'websocket-server'],
 
 
         // list of files / patterns to load in the browser
@@ -84,6 +84,19 @@ module.exports = function(config) {
 
         // Concurrency level
         // how many browser should be started simultaneous
-        concurrency: Infinity
+        concurrency: Infinity,
+
+        websocketServer: {
+            port: 8889,
+            beforeStart: (server) => {
+                server.on('request', (req) => {
+                    // Just echo back the message...
+                    const connection  = req.accept('echo-protocol', req.origin)
+                    connection.on('message', (msg) => {
+                        connection.sendUTF(msg.utf8Data)
+                    })
+                })
+            }
+        }
     })
 }

@@ -2,6 +2,7 @@
  * Created by T4rk on 6/30/2017.
  */
 
+import {arrIncludes} from '../extensions/arr-extensions'
 /**
  * Double ended queue.
  */
@@ -92,6 +93,10 @@ export class Deque {
      */
     forEach(each) {
         this._arr.forEach(each)
+    }
+
+    include(item) {
+        return arrIncludes(this._arr, item)
     }
 
     /**

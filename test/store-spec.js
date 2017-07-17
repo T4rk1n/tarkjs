@@ -1,7 +1,7 @@
 /**
  * Created by T4rk on 7/14/2017.
  */
-import { PromiseStore } from '../src/persistance/mem-stores'
+import { PromiseStore, SocketStore } from '../src/persistance/mem-stores'
 import { EventBus, valueChanged } from '../src/event-bus/event-bus'
 import {arrSum} from '../src/extensions/arr-extensions'
 
@@ -83,4 +83,25 @@ describe('Test PromiseStore', () => {
     })
 })
 
+describe('Test SocketStore', () => {
+    const socket = new SocketStore('ws://localhost:8889/', {
+        socketName: 'test', protocols: ['echo-protocol']
+    })
+    it('Test the socket subscription', (done) => {
+        socket.onOpen = () => socket.send('1')
+        socket.onClose = () => done()
 
+        socket.subscribe((e) => {
+            const { event, payload } = e
+            const { data, store  } = payload
+            const num = parseInt(data)
+            expect(store.length).toBe(num)
+            expect(store.include(data)).toBeTruthy()
+            expect(event).toBe(socket.socket_message_received)
+            expect(num).toBeGreaterThanOrEqual(1)
+            if (parseInt(data) > 10) socket.close()
+            else socket.send(`${num + 1}`)
+        })
+        socket.start()
+    })
+})

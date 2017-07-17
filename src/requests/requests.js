@@ -72,14 +72,20 @@ export const xhrRequest = (url, options=defaultXhrOptions) => new Promise((resol
     xhr.open(method, url)
     objItems(headers).forEach(([k, v]) => xhr.setRequestHeader(k, v))
     xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            let responseValue = xhr.response
-            if (jsonPattern.test(xhr.getResponseHeader('Content-Type'))) {
-                responseValue = JSON.parse(xhr.responseText)
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                let responseValue = xhr.response
+                if (jsonPattern.test(xhr.getResponseHeader('Content-Type'))) {
+                    responseValue = JSON.parse(xhr.responseText)
+                }
+                resolve(responseValue)
+            } else {
+                reject({
+                    error: 'xhr_fail',
+                    message: `XHR ${url} FAILED - STATUS: ${xhr.status} MESSAGE: ${xhr.statusText}`,
+                    xhr
+                })
             }
-            resolve(responseValue)
-        } else {
-            reject(`XHR ${url} FAILED - STATUS: ${xhr.status} MESSAGE: ${xhr.statusText}`)
         }
     }
     xhr.onerror = (err) => reject(err)

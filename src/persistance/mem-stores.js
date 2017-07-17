@@ -304,8 +304,20 @@ export class SocketStore {
         this._eventBus.removeEventHandler(this.socket_message_received, sub)
     }
 
+    /**
+     * @return {string}
+     */
     get socket_close() { return `${this.socketName}_close` }
+    /**
+     * @return {string}
+     */
     get socket_open() { return `${this.socketName}_open` }
+    /**
+     * @return {string}
+     */
     get socket_error() { return `${this.socketName}_error` }
+    /**
+     * @return {string}
+     */
     get socket_message_received() { return `${this.socketName}_message_received` }
 }

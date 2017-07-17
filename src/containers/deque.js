@@ -42,25 +42,35 @@ export class Deque {
     }
 
     /**
+     * Insert an item in the deque, either at front or the end
+     * @param {*} item
+     * @param {boolean} [front=false] insert at the front of the deque.
+     * @return {Deque}
+     */
+    insert(item, front=false) {
+        front ? this._arr.unshift(item) : this._arr.push(item)
+        if (this._capacity && this._arr.length >= this._capacity) front ? this.popFront() : this.popBack()
+        return this
+    }
+
+    /**
      * Insert item at the end of the stack.
      * @param {*} item
+     * @deprecated
      * @return {Deque} this
      */
     pushBack(item) {
-        this._arr.push(item)
-        if (this._capacity && this._arr.length >= this._capacity) this.popFront()
-        return this
+        return this.insert(item)
     }
 
     /**
      * Insert an item at the first position of the stack.
      * @param {*} item
+     * @deprecated
      * @return {Deque} this
      */
     pushFront(item) {
-        this._arr.unshift(item)
-        if (this._capacity && this._arr.length >= this._capacity) this.popBack()
-        return this
+        return this.insert(item, true)
     }
 
     /**

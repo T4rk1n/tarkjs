@@ -18,7 +18,9 @@ module.exports = function(config) {
         files: [
             'node_modules/babel-polyfill/dist/polyfill.js',
             'src/**/*.js',
-            'test/**/*.js'
+            'test/**/*.js',
+            {pattern: 'test/**/*.txt', watched: false, included: false, served: true, nocache: false},
+            {pattern: 'test/**/*.json', watched: false, included: false, served: true, nocache: false},
         ],
 
         // list of files to exclude
@@ -46,7 +48,7 @@ module.exports = function(config) {
 
         coverageReporter: {
             // eslint-disable-next-line no-undef
-            type: process.env.dev === 'true' ? 'lcov': 'lcovonly',
+            type: 'lcovonly',
             dir: 'coverage/',
             reporters: [
                 { type: 'lcov', subdir: 'report-lcov' },
@@ -73,7 +75,7 @@ module.exports = function(config) {
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: process.env.dev ? ['Chrome'] : ['PhantomJS'],
+        browsers: ['ChromeHeadless'],
         phantomjsLauncher: {
             exitOnResourceError: true
         },

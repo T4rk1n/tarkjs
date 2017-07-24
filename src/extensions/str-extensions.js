@@ -4,8 +4,8 @@
 
 /**
  * @typedef {Object} FindAllOptions
- * @property {int} indexGet
- * @property {boolean} raw
+ * @property {int} [indexGet=1]
+ * @property {boolean} [raw=true]
  */
 
 const defaultFindAllOptions = {
@@ -16,7 +16,7 @@ const defaultFindAllOptions = {
  * Find all regex matches in a string.
  * @param {!string} str string to find matches.
  * @param {!RegExp} re be sure to set the g
- * @param {?FindAllOptions} [options={indexGet: 1, raw: true}]
+ * @param {Object} [options={indexGet: 1, raw: true}]
  * @return {!Array}
  */
 export const findAllMatches = (str, re, options=defaultFindAllOptions) => {

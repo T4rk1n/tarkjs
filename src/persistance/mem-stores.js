@@ -11,6 +11,9 @@ const fulfilled = (action) => `${action}_fulfilled`
 const rejected = (action) => `${action}_rejected`
 const pending = (action) => `${action}_pending`
 
+// eslint-disable-next-line no-console
+const onDispatchError = console.log
+
 /**
  * Create an object with all the states of a promise.
  * @param {string} action
@@ -34,12 +37,12 @@ export const createPromiseStates = (action) => ({
  * @param {!string} action
  * @param {!Promise} promise
  */
-export const statefulPromise = (eventBus, action, promise) => {
-    eventBus.dispatch({event: pending(action)})
+export const promiseNotifier = (eventBus, action, promise) => {
+    eventBus.dispatch({event: pending(action)}).promise.catch(onDispatchError)
     promise.then(
-        value => eventBus.dispatch({event: fulfilled(action), payload: value})
+        value => eventBus.dispatch({event: fulfilled(action), payload: value}).promise.catch(onDispatchError)
     ).catch(
-        error => eventBus.dispatch({event: rejected(action), payload: error})
+        error => eventBus.dispatch({event: rejected(action), payload: error}).promise.catch(onDispatchError)
     )
 }
 
@@ -108,9 +111,9 @@ export class PromiseStore {
              * @return {CancelablePromise}
              */
             m[k] = (options={}) =>  {
-                const prom = toCancelable(actions[k](options))
-                statefulPromise(this._eventBus, k, prom.promise)
-                return prom
+                const prom = actions[k](options)
+                promiseNotifier(this._eventBus, k, prom)
+                return toCancelable(prom)
             }
             return m
         }, {})
@@ -169,7 +172,8 @@ export class PromiseStore {
  * @property {?string} [socketName=null] The name of the socket, if null take the url
  * @property {Array} [protocols=[]] socket protocols
  * @property {boolean} [start=false] Start the socket on initialization.
- * @property {int} [capacity=100] The number of message to keep in the store (FIFO).
+ * @property {int} [capacity=100] The number of message to keep in the store.
+ * @property {boolean} [insertFront=false] Insert the elements at the front of the deque store.
  * @property {function(err:*)} [onError] socket event handler
  * @property {function(e:*)} [onOpen] socket event handler
  * @property {function(e:*)} [onClose] socket event handler
@@ -180,7 +184,7 @@ export class PromiseStore {
  * @type {SocketStoreOptions}
  */
 const defaultSocketStoreOptions = {
-    eventBus: null, protocols: [], start: false, capacity: 100, socketName: null,
+    eventBus: null, protocols: [], start: false, capacity: 100, socketName: null, insertFront: false,
     onOpen: () => {},
     onError: () => {},
     onClose: () => {},
@@ -197,7 +201,7 @@ export class SocketStore {
      */
     constructor(url, options=defaultSocketStoreOptions) {
         const {
-            eventBus, protocols, start, onOpen, capacity, onError, onClose, transformMessage, socketName
+            eventBus, protocols, start, onOpen, capacity, onError, onClose, transformMessage, socketName, insertFront
         } = {...defaultSocketStoreOptions, ...options}
         this._eventBus = eventBus || new EventBus()
         /**
@@ -243,6 +247,7 @@ export class SocketStore {
          * @type {function(data: *)}
          */
         this.transformMessage = transformMessage
+        this._front = insertFront
         if (start) this.start()
     }
 
@@ -254,7 +259,7 @@ export class SocketStore {
         this._socket = new WebSocket(this.url, this.protocols)
         const socketEvent = (e, func, event) => {
             func(e)
-            this._eventBus.dispatch({event, payload: e})
+            this._eventBus.dispatch({event, payload: e}).promise.catch(onDispatchError)
         }
         this._socket.onopen = (e) => socketEvent(e, this.onOpen, this.socket_open)
         this._socket.onerror = (e) => socketEvent(e, this.onError, this.socket_error)
@@ -262,7 +267,7 @@ export class SocketStore {
         this._socket.onmessage = (event) => {
             const data = this.transformMessage(event.data)
             // emits change events - remove the notifier as it is redundant ?
-            this.store.messages = this.store.messages.pushBack(data)
+            this.store.messages = this.store.messages.insert(data, this._front)
             this._eventBus.dispatch({
                 event: this.socket_message_received,
                 payload: {data, store: this.store.messages}

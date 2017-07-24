@@ -32,10 +32,17 @@ export const arrMapReduceToObj = (arr, mapping, obj={}) => arr.map(mapping).redu
 /**
  * Copy the elements of an array to a new array.
  * @param {Array} arr
+ * @param {Array} [onto=[]]
  * @return {Array}
  */
-export const arrCopy = (arr) => arr.reduce((a,e) => {a.push(e); return a} ,[])
+export const arrCopy = (arr, onto=[]) => arr.reduce((a,e) => {a.push(e); return a} ,onto)
 
+/**
+ * Merges arrays together
+ * @param {Array} arr
+ * @param {...Array} arrs
+ */
+export const arrMerge = (arr, ...arrs) => arrs.reduce((a, e) => arrCopy(arrCopy(e, a)), arr)
 
 /**
  * Sum the numbers from an array.

@@ -19,30 +19,8 @@ describe('Test PromiseStore', () => {
         spyOn(eventBus, 'addEventHandler').and.callThrough()
     })
 
-    it('Test the dispatch of eventBus is async', (done) => {
-        // This will fail under a severely outdated environment.
-        let check = false
-        eventBus.addEventHandler('async', () => {
-            let dt = new Date()
-            while ((new Date()) - dt <= 300) { /**/ }
-            check = true
-            done()
-        })
-        eventBus.dispatch({event: 'async'})
-        expect(check).toBeFalsy()
-    })
-
-    it('Test the accumulation of events return values', (done) => {
-        eventBus.addEventHandler('accumulate', (e) => e.payload)
-        eventBus.addEventHandler('accumulate', (e) => arrSum(e.acc) + 1)
-        eventBus.dispatch({event: 'accumulate', payload: 10}).promise.then((acc) => {
-            expect(arrSum(acc)).toBe(21)
-            done()
-        })
-    })
-
     it('Test the store promise actions handlers',(done) => {
-        const suber = (e) => expect('to not be called').toBeNull()
+        const suber = () => expect('to not be called').toBeNull()
 
         eventBus.addEventHandler('fake_fulfilled', (value) => {
             const { result } = store.actionStore.fake.store
@@ -77,8 +55,8 @@ describe('Test PromiseStore', () => {
         store.subscribe('fake', suber)
         store.unsubscribe('fake', suber)
 
-        store.actions.fake({fakeReject: true, delay: 1000})
-        store.actions.fake({pay: 'hello', delay: 500})
+        store.actions.fake({fakeReject: true, delay: 400}).promise.catch(e => console.log(e))
+        store.actions.fake({pay: 'hello', delay: 200}).promise.catch(console.log)
         expect(eventBus.dispatch).toHaveBeenCalledTimes(2)
     })
 })
@@ -103,5 +81,49 @@ describe('Test SocketStore', () => {
             else socket.send(`${num + 1}`)
         })
         socket.start()
+    })
+})
+
+
+
+describe('Event bus spec', () => {
+    const r = /hello/
+    const handler = {handle: (e) => {
+        expect(r.test(e.event)).toBeTruthy()
+    }}
+    beforeEach(() => {
+        spyOn(handler, 'handle').and.callThrough()
+    })
+
+    it('Test the dispatch of eventBus is async', (done) => {
+        // This will fail under a severely outdated environment.
+        let check = false
+        eventBus.addEventHandler('async', () => {
+            let dt = new Date()
+            while ((new Date()) - dt <= 300) { /**/ }
+            check = true
+
+        })
+        eventBus.dispatch({event: 'async'}).promise.then(done)
+        expect(check).toBeFalsy()
+    })
+
+    it('Test the accumulation of events return values', (done) => {
+        eventBus.addEventHandler('accumulate', (e) => e.payload)
+        eventBus.addEventHandler('accumulate', (e) => arrSum(e.acc) + 1)
+        eventBus.dispatch({event: 'accumulate', payload: 10}).promise.then(({acc}) => {
+            expect(arrSum(acc)).toBe(21)
+            done()
+        })
+    })
+
+    it('Test eventBus regex dispatch handler', (done) => {
+        eventBus.addEventHandler(r, handler.handle)
+        expect(eventBus.findHandlers('hello').length).toBe(1)
+        eventBus.dispatch({event: 'nope'}).promise.catch(() => {})
+        eventBus.dispatch({event: 'hello_world'}).promise.then(() => {
+            expect(handler.handle).toHaveBeenCalledTimes(1)
+            done()
+        })
     })
 })

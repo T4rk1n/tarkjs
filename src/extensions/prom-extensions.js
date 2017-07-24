@@ -2,59 +2,107 @@
  * Created by T4rk on 6/19/2017.
  */
 
+import { objExtend } from './obj-extensions'
+
+export const globalCallbacks = (() => {
+    const acb = {
+        asyncCallback: (func) => setTimeout(func, 0),
+        clearCallback: (callId) => clearTimeout(callId)
+    }
+    // eslint-disable-next-line no-undef
+    const glob = typeof module !== 'undefined' && module.exports ? global
+        : typeof window !== undefined ? window : typeof self !== undefined ? self : {}
+
+    if (glob.requestIdleCallback) {
+        acb.asyncCallback = (func) => glob.requestIdleCallback(func)
+        acb.clearCallback = (callId) => glob.cancelIdleCallback(callId)
+    }
+    else if (glob.setImmediate) {
+        acb.asyncCallback = (func) => glob.setImmediate(func)
+        acb.clearCallback = (callId) => glob.clearImmediate(callId)
+    }
+    return Object.freeze ? Object.freeze(acb) : acb
+})()
+
 /**
+ * A promise may be canceled:
+ * - before it's execution.
+ * - after it resolves, rejecting instead.
+ * - during a step of a promise chain, stopping propagation.
  * @typedef {Object} CancelablePromise
  * @property {Promise} promise
  * @property {function} cancel cancel the promise.
  */
 
 /**
- * @type {Object} PromiseError
+ * @typedef {Object} TError
  * @property {!string} error
  * @property {?string} message
  */
 
 /**
- * @type {Object} PromiseWrapOptions
+ * @typedef {Object} PromiseWrapOptions
  * @property {boolean} [rejectNull=false] Reject the return value of the wrapped function if null.
- * @property {?int} [timeout=null] Only works for requestIdleCallback
- * @property {string} [nullMessage=null] Message to include in the null_result error.
+ * @property {string} [nullMessage=''] Message to include in the null_result error.
+ * @property {Array} [args=[]] to give on the function call.
  */
 
 /**
- * Async Promise function wrap
+ * @typedef {Object} PromiseCreator
+ * @property {function(args:*):Promise} creator
+ * @property {Array} [promArgs] arguments to call the creator
+ */
+
+/**
+ * @type {PromiseWrapOptions}
+ */
+const defaultPromiseWrapOptions = {
+    rejectNull: null, timeout: null, nullMessage: '', args: []
+}
+
+
+
+/**
+ * Wrap a function to resolve the return value and reject errors.
  *
- * Four options may happen:
- * - requestIdleCallback for chrome >= 47 && opera >= 34
- * - setImmediate for ie >= 10, Edge, PhantomJS
- * - requestAnimationFrame if available
- * - synchronous execution in worst case scenario
+ * Three callback options may happen:
+ * - requestIdleCallback chrome >= 47 && opera >= 34
+ * - setImmediate ie >= 10, Edge, PhantomJS
+ * - setTimeout(,0) rest
  *
+ * Cancellation before execution if cleared else after.
  * @param {function} func the return of the function will be resolved.
- * @param {?Object} [options={rejectNull: false, timeout: null, nullMessage}]
+ * @param {PromiseWrapOptions} [options]
  * @return {CancelablePromise}
  */
-export const promiseWrap = (func, options={rejectNull: false, timeout: null, nullMessage: '' }) => {
-    let canceled = false, reqId = -1
-    const { rejectNull, timeout, nullMessage } = options
+export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
+    let canceled = false,
+        reqId = -1
+    const { rejectNull, nullMessage, args } = objExtend({}, defaultPromiseWrapOptions, options)
     const promise = new Promise((resolve, reject) => {
         const handle = () => {
             let result
-            try {
-                result = func()
-            } catch (e) {
-                return reject(e)
-            }
-            if (rejectNull && !result) reject({error:'null_result', message: nullMessage || 'Expected promise result is null'})
-            else if (canceled) reject({error: 'canceled', message: 'Promise was canceled'})
+
+            try { result = func(...args) }
+            catch (e) { return reject(e) }
+
+            if (rejectNull && !result) reject({
+                error:'null_result',
+                message: nullMessage || 'Expected promise result is null'
+            })
+            else if (canceled) reject({
+                error: 'canceled',
+                message: `Promise was canceled, reqId = ${reqId}`
+            })
             else resolve(result)
         }
-        if (window.requestIdleCallback) reqId = window.requestIdleCallback(handle, {timeout})   // chrome >= 47 && opera >= 34
-        else if (window.setImmediate) reqId = window.setImmediate(handle)                       // ie >= 10, Edge, PhantomJS
-        else if (window.requestAnimationFrame) reqId = window.requestAnimationFrame(handle)     // Some kind of async
-        else handle() // no async fail.
+        // TODO get a better global check than window.
+        reqId = globalCallbacks.asyncCallback(handle)
     })
-    const cancel = () => canceled = true
+    const cancel = () => {
+        canceled = true
+        globalCallbacks.clearCallback(reqId) // TODO Test if rejected because not sure it will reject if cleared.
+    }
     return {
         promise,
         cancel,
@@ -63,7 +111,8 @@ export const promiseWrap = (func, options={rejectNull: false, timeout: null, nul
 }
 
 /**
- * Wrap a promise as cancelable.
+ * Wrap a promise as cancelable with timeout option.
+ * Rejection after resolve.
  * @param  {!Promise} promise
  * @param {?int} timeout
  * @return {CancelablePromise}
@@ -77,11 +126,91 @@ export const toCancelable = (promise, timeout=null) => {
             else if (timeout && new Date() - dt >= timeout)
                 reject({error: 'time_out', message: `Promise was resolved after timeout of ${timeout}`})
             else resolve(value)
-        }).catch(err => reject(err))
+        }).catch(reject)
     })
     return {
         promise: wrap,
         cancel() { canceled = true }
+    }
+}
+
+/**
+ * Executes a function after a delay.
+ * Cancellation before execution only.
+ * @param {number} delay
+ * @param {function} func Executor
+ * @param {*} fargs arguments given to func call
+ * @return {CancelablePromise}
+ */
+export const delayed = (delay, func, ...fargs) => {
+    let canceled = false
+    const promise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (canceled) reject({
+                error: 'canceled',
+                message: 'Delayed execution was canceled'})
+            else resolve(func(...fargs))
+        }, delay)
+    })
+    return {
+        promise,
+        cancel: () => canceled = true
+    }
+}
+
+
+/**
+ * {@link chainPromises} options.
+ * @typedef {Object} PromiseChainOptions
+ * @property {function} [onChain] inner promise.then callback.
+ * @property {function} [onError] inner promise.catch callback.
+ * @property {boolean} [rejectOnError=true] reject the outer promise on inner rejection.
+ */
+
+/**
+ * @type {PromiseChainOptions}
+ */
+const defaultChainOptions = {
+    onChain: ()=>{}, onError: ()=>{}, rejectOnError: true,
+}
+
+/**
+ *
+ * @param {Array<PromiseCreator>} creators
+ * @param {PromiseChainOptions} [options]
+ * @return {CancelablePromise}
+ */
+export const chainPromises = (creators, options=defaultChainOptions) => {
+    let canceled = false, cancel = () => canceled = true
+    const { onChain, onError, rejectOnError } = objExtend({}, defaultChainOptions, options)
+    const promise = new Promise((resolve, reject) => {
+        let i = 0, acc = []
+        const _err = (err) => {
+            onError(err)
+            if (rejectOnError) reject(err)
+            else chain()
+        }
+        const chain = (value) => {
+            if (value) {
+                onChain(value)
+                acc.push(value)
+            }
+            if (canceled) reject({
+                error: 'canceled', message: `Promise chain was canceled after ${i} promise.`
+            })
+            else if (i < creators.length) {
+                const { creator, promArgs } = creators[i]
+                i++
+                const prom = creator(...promArgs)
+                prom.then(chain).catch(_err)
+            }
+            else resolve(acc)
+        }
+        chain()
+    })
+    return {
+        promise,
+        cancel
     }
 }
 

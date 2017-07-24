@@ -67,15 +67,15 @@ describe('test SeededRandom', () => {
 describe('Test prom-extensions', () => {
     it('Should be canceled', (done) => {
         const p = toCancelable(new Promise((resolve, reject) => {
-            setTimeout(() => resolve('hello'), 2000)
+            setTimeout(() => resolve('hello'), 200)
         }))
-        p.promise.catch(() => done()) // phantomjs is bad and will say unhandled promise rejection.
+        p.promise.catch(() => done())
         p.promise.then(() => expect('to be canceled').toBeNull())
         p.cancel()
     })
     it('Should be timeout', (done) => {
         const p = toCancelable(new Promise((resolve, reject) => {
-            setTimeout(()=> resolve('hello'), 2000)
+            setTimeout(()=> resolve('hello'), 300)
         }), 200)
         p.promise.then(() => expect('to be canceled').toBeNull())
         p.promise.catch(() => done())

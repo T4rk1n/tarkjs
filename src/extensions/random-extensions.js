@@ -7,6 +7,15 @@ import { cosinusInterpolation } from './math-extensions'
 /**
  * Simple random number generator that shoots numbers based on a seed sequence.
  * No guarantee to randomness uniformity.
+ * @example
+ * import { SeededRandom } from 'tarkjs'
+ *
+ * const rand = new SeededRandom(3000)
+ * const rand2 = new SeededRandom(3000)
+ *  console.log(rand.random() === rand2.random()) // true
+ * rand.seed = 400
+ * rand2.seed = 100
+ * console.log(rand.random() === rand2.random()) // false
  */
 export class SeededRandom {
     /**

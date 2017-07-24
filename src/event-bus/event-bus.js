@@ -3,8 +3,9 @@
  */
 
 import { promiseWrap } from '../extensions/prom-extensions'
-import { objCopy } from '../extensions/obj-extensions'
-import { arrIncludes } from '../extensions/arr-extensions'
+import {objCopy, objExtend } from '../extensions/obj-extensions'
+import {arrIncludes, arrMerge} from '../extensions/arr-extensions'
+import { TObject } from '../containers/tobject'
 
 /**
  * Simple object with event type and optional payload.
@@ -14,9 +15,12 @@ import { arrIncludes } from '../extensions/arr-extensions'
  */
 
 /**
+ * Custom event object dispatched by the EventBus.
  * @typedef {TEvent} TEventHandlerParams
  * @property {function} cancel function to cancel the next events dispatch
  * @property {Array} acc Accumulator of the return values of the previous handlers.
+ * @property {number} i iterator of the handler.
+ * @property {number} end length of the handlers.
  */
 
 /**
@@ -37,45 +41,69 @@ import { arrIncludes } from '../extensions/arr-extensions'
  */
 export class EventBus {
     constructor() {
-        this._handlers = {}
+        this._handlers = new TObject()
     }
 
     /**
      * Add an handler function to an event handler list.
-     * @param {string} event
+     * @param {string|RegExp} event If regex it will match event.
      * @param {TEventHandler} handler
      */
     addEventHandler(event, handler) {
-        const handlers = this._handlers[event] || []
-        if (!arrIncludes(handlers, handler)) {
-            handlers.push(handler)
-            this._handlers[event] = handlers
+        const isRegex = event instanceof RegExp
+        const h = this._handlers.opt(event, { isRegex, handlers: [], original: event })
+        if (!arrIncludes(h.handlers, handler)) {
+            h.handlers.push(handler)
+            this._handlers[event] = h
         }
     }
 
     //noinspection JSCommentMatchesSignature,JSValidateJSDoc
     /**
-     * Dispatch the event to all the handlers in the order they were added.
-     * Handlers receives the payload as param and can cancel the next ones.
+     * Dispatch a {@link TEventHandlerParams} to all the concerned handlers
      * @param {TEvent} param
-     * @return {CancelablePromise}
+     * @return {CancelablePromise} canceling a dispatch will prevent next handler from executing.
      */
     dispatch({event, payload}) {
-        let canceled = false
-        const cancel = () => canceled = true
-        const p = promiseWrap(() => {
-            const handlers = this._handlers[event]
-            if (!handlers || handlers.length < 1) return []
+        let canceled = false,  curProm
+        const cancel = () => {
+            canceled = true
+        }
+        const promise = new Promise((resolve, reject) => {
+            const handlers = this.findHandlers(event)
+            const  end = handlers.length
+            if (!handlers || handlers.length < 1) return reject({
+                error: 'missing_handler',
+                message:`No handler to dispatch ${event}`})
             let i = 0
             const acc = []
-            while (i < handlers.length && !canceled) {
-                acc.push(handlers[i]({event, payload, cancel, acc}))
-                i++
+            const handle = (value) => {
+                if (value) {
+                    acc.push(value)
+                }
+                if (canceled)
+                    return reject({
+                        error: 'canceled',
+                        message: `Dispatch ${event} was canceled after ${i} handlers.`})
+                if (i < end) {
+                    curProm = promiseWrap(() => {
+                        const r = handlers[i]({event, payload, cancel, acc, i, end})
+                        i++
+                        return r
+                    })
+                    curProm.promise.then(handle)
+                    curProm.promise.catch(reject)
+                }
+                else {
+                    resolve({event, acc, dispatched: i})
+                }
             }
-            return canceled ? null : acc.filter(e => e)
-        }, {rejectNull: true, nullMessage: `Dispatch ${event} was canceled`})
-        p.cancel = cancel
-        return p
+            handle()
+        })
+        return {
+            promise,
+            cancel
+        }
     }
 
     /**
@@ -84,9 +112,20 @@ export class EventBus {
      * @param {function} handler
      */
     removeEventHandler(event, handler) {
-        const handlers = this._handlers[event]
-        if (!handlers) return
-        this._handlers[event] = handlers.filter(h => h !== handler)
+        const h = this._handlers[event]
+        if (!h) return
+        h.handlers = h.handlers.filter(h => h !== handler)
+    }
+
+    /**
+     * Merge the handlers for a event.
+     * @param {string} event Event to handlers for.
+     */
+    findHandlers(event) {
+        return arrMerge([], ...this._handlers.items()
+            .filter(([k,{ isRegex, original }]) => isRegex ? original.test(event): k === event)
+            // eslint-disable-next-line
+            .map(([_, {handlers}]) => handlers))
     }
 }
 
@@ -102,6 +141,10 @@ export class EventBus {
  */
 export const valueChanged = (key, prefix=null) => `${prefix ? `${prefix}_`: ''}${key}_value_changed`
 
+
+// eslint-disable-next-line no-console
+const valueChangedOptions = { onDispatchError: (e) => console.log(e) }
+
 /**
  * Wraps an object properties to dispatch a value_changed event on the setter.
  * The dispatched event key is `${key}_value_changed`.
@@ -110,7 +153,7 @@ export const valueChanged = (key, prefix=null) => `${prefix ? `${prefix}_`: ''}$
  * circular madness.
  * @param {Object} obj The obj to modify. Will use _data property to hold the values.
  * @param {EventBus} eventBus The event bus to dispatch events.
- * @param {Object} [options={prefix: undefined}]
+ * @param {Object} [options={}]
  * @return {Object}
  * @throws {TypeError} if fail to wraps a property, should not happen if using plain objects.
  * @example
@@ -118,8 +161,8 @@ export const valueChanged = (key, prefix=null) => `${prefix ? `${prefix}_`: ''}$
  * e.hello = 'hi'
  * // dispatched event {event: 'hello_value_changed', payload: {newValue: 'hi', oldValue: 'hello'}}
  */
-export const changeNotifier = (obj, eventBus, options={}) => {
-    const { prefix } = options
+export const changeNotifier = (obj, eventBus, options=valueChangedOptions) => {
+    const { prefix, onDispatchError } = objExtend({}, valueChangedOptions, options)
     const notifier = {}
     notifier._data = objCopy(obj)
     Object.keys(obj).filter(f => obj.hasOwnProperty(f)).reduce((a, k) => {
@@ -130,12 +173,11 @@ export const changeNotifier = (obj, eventBus, options={}) => {
                 eventBus.dispatch({
                     event: valueChanged(k, prefix),
                     payload: {newValue: value, oldValue}
-                })
+                }).promise.catch(onDispatchError)
             },
             get: () => notifier._data[k]
         })
     }, notifier)
     return notifier
 }
-
 

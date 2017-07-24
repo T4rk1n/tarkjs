@@ -11,8 +11,7 @@ describe('Test requests wrappers', () => {
         })
     })
     it('Test the xhrRequest text result', (done) => {
-        const r = xhrRequest('base/test/hello.txt')
-        r.then((data) => {
+        xhrRequest('base/test/hello.txt').then((data) => {
             expect(data).toBe('hello')
             done()
         })

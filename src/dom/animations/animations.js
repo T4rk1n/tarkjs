@@ -1,4 +1,4 @@
-import { getOffset, getFontSize } from '../dom/dom-manipulations'
+import { getOffset, getFontSize } from '../dom-manipulations'
 
 /**
  * @typedef {Object} AnimationOptions

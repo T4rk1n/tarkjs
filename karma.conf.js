@@ -1,6 +1,7 @@
 // Karma configuration
 // Generated on Thu Jul 13 2017 01:43:27 GMT-0400 (Eastern Daylight Time)
 
+
 // eslint-disable-next-line no-undef
 module.exports = function(config) {
     config.set({
@@ -11,12 +12,11 @@ module.exports = function(config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['browserify','jasmine', 'websocket-server'],
+        frameworks: ['browserify', 'jasmine', 'websocket-server'],
 
 
         // list of files / patterns to load in the browser
         files: [
-            'node_modules/babel-polyfill/dist/polyfill.js',
             'src/**/*.js',
             'test/**/*.js',
             {pattern: 'test/**/*.txt', watched: false, included: false, served: true, nocache: false},

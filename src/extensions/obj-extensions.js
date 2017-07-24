@@ -10,7 +10,7 @@ export const objMapReducer = (m, [k, v]) => {m[k] = v; return m}
  * @param {!Object} obj
  * @return {Array}
  */
-export const objItems = (obj) => Object.keys(obj).filter(k => obj.hasOwnProperty(k)).map(k => [k, obj[k]])
+export const objItems = (obj) => Object.keys(obj).map(k => [k, obj[k]])
 
 /**
  * Apply a filter and return back a new object.
@@ -24,7 +24,7 @@ export const objFilter = (obj, filterFunc) => objItems(obj).filter(filterFunc).r
  * @param {!Object} obj
  * @param {Array} keys
  */
-export const objRemoveKeys = (obj, keys) => Object.keys(obj).filter(k => obj.hasOwnProperty(k) && !arrIncludes(keys, k))
+export const objRemoveKeys = (obj, keys) => Object.keys(obj).filter(k => !arrIncludes(keys, k))
     .map(k => [k, obj[k]]).reduce(objMapReducer, {})
 
 /**
@@ -33,13 +33,20 @@ export const objRemoveKeys = (obj, keys) => Object.keys(obj).filter(k => obj.has
  * @param {string} str
  * @return {string}
  */
-export const objFormat = (obj, str) => Object.keys(obj).filter(k => obj.hasOwnProperty(k))
-    .reduce((p, n) => p.replace(`{${n}}`, obj[n]), str)
+export const objFormat = (obj, str) => Object.keys(obj).reduce((p, n) => p.replace(`{${n}}`, obj[n]), str)
 
 /**
- * Copy the properties values of an object to a new object.
- * @param {!Object} obj
+ * Copy the properties values of an object to another object.
+ * Only copy properties values, no meta and proto.
+ * @param {!Object} obj to copy
+ * @param {Object} [onto={}] Copy the properties values to, default new object.
  * @return {Object}
  */
-export const objCopy = (obj) => Object.keys(obj).reduce((m, k) => {m[k] = obj[k]; return m}, {})
+export const objCopy = (obj, onto={}) => Object.keys(obj).reduce((m, k) => {m[k] = obj[k]; return m}, onto)
+
+/**
+ * Object.assign or Reduce the obj with objCopy.
+ */
+export const objExtend = Object.assign ? Object.assign :
+    (obj, ...others) => others.reduce((a, o) => objCopy(o, a), obj)
 

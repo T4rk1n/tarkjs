@@ -8,6 +8,8 @@
     "test": "cross-env NODE_ENV=test karma start karma.conf.js --single-run",
     "build": "babel src --out-dir lib --source-maps",
     "watch": "babel -s inline -d lib -w src",
+    "bundle": "browserify src/index.js -s tarkjs -o dist/tarkjs.js -t [ babelify ]",
+    "bundle-min": "browserify src/index.js -s tarkjs -t [ babelify ] | uglifyjs -o dist/tarkjs.min.js",
     "doc": "esdoc"
   },
   "keywords": [
@@ -25,11 +27,12 @@
   "repository": "https://github.com/T4rk1n/tarkjs",
   "devDependencies": {
     "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-polyfill": "^6.23.0",
-    "babel-preset-env": "^1.5.2",
+    "babel-preset-env": "^1.6.0",
     "babelify": "^7.3.0",
     "browserify": "^14.4.0",
     "cross-env": "^5.0.1",
@@ -42,8 +45,12 @@
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.1.0",
     "karma-phantomjs-launcher": "^1.0.4",
+    "karma-source-map-support": "^1.2.0",
+    "karma-sourcemap-loader": "^0.3.7",
     "karma-websocket-server": "^1.0.0",
     "sinon": "^2.3.8",
+    "sourcemapify": "^1.1.2",
+    "uglify-js": "^3.0.25",
     "watchify": "^3.9.0",
     "whatwg-fetch": "^2.0.3"
   },

@@ -144,8 +144,8 @@ export const formatStyleKey = (key) => key.split('')
  * @param {Object} styleObj
  * @return {string}
  */
-export const serializeStyleObj = (styleObj) => Object.keys(styleObj).filter(k => styleObj.hasOwnProperty(k))
-    .map(k => `${formatStyleKey(k)}: ${styleObj[k]};`).reduce(concatStr, '')
+export const serializeStyleObj = (styleObj) => objItems(styleObj)
+    .map(([k,v]) => `${formatStyleKey(k)}: ${v};`).reduce(concatStr, '')
 
 /**
  * Get all the url params of the current page.

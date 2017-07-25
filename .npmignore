@@ -110,3 +110,5 @@ doc
 *.sh
 
 test
+
+cc-test-reporter

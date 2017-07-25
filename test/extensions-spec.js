@@ -4,7 +4,7 @@
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
 import { arrChunk, arrSum } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
-import { toCancelable } from '../src/extensions/prom-extensions'
+import { toCancelable, delayed } from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
 
 
@@ -79,6 +79,18 @@ describe('Test prom-extensions', () => {
         }), 200)
         p.promise.then(() => expect('to be canceled').toBeNull())
         p.promise.catch(() => done())
+    })
+
+    it('Test delayed', (done) => {
+        const dt = new Date() / 1000
+        const p = delayed(100, () => {
+            expect(dt).toBeCloseTo((new Date() - 100) / 1000)
+        })
+        const p2 = delayed(300, () => {
+            expect('to be canceled').toBeNull()
+        })
+        p2.cancel()
+        p2.promise.catch(done)
     })
 })
 

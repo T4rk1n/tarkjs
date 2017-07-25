@@ -32,5 +32,6 @@ deploy:
   provider: npm
   email: t4rk@outlook.com
   api_key: $NPM_TOKEN
+  skip_cleanup: true
   on:
     tags: true

@@ -3,7 +3,6 @@ import { getOffset, getFontSize } from '../dom-manipulations'
 /**
  * @typedef {Object} AnimationOptions
  * @property {?number} division number of frames to execute.
- * @property {?function} callback called when the animation end.
  */
 
 /**
@@ -16,29 +15,38 @@ import { getOffset, getFontSize } from '../dom-manipulations'
  * @type {FadeInOptions}
  */
 const defaultFadeInOptions = {
-    display:'block', division:100, callback: () => null
+    display:'block', division:100
 }
 
 /**
  * Progressively fade in an element in n frame.
  * @param {!Element} elem
  * @param {?FadeInOptions} [options={display: 'block', division: 60}]
+ * @return {CancelablePromise}
  */
 export const fadeIn = (elem, options=defaultFadeInOptions) => {
-    const { display, division, callback } = {...defaultFadeInOptions, ...options }
+    const { display, division } = {...defaultFadeInOptions, ...options }
     elem.style.opacity = 0
     elem.style.display = display
     const increment = 1 / division
-    const fade = () => {
-        let value = parseFloat(elem.style.opacity) + increment
-        if (value <= 1) {
-            elem.style.opacity = value
-            requestAnimationFrame(fade)
-        } else {
-            callback()
+    let canceled = false
+    const promise = new Promise((resolve, reject) => {
+        const fade = () => {
+            if (canceled) return reject({error: 'canceled', message: 'fadeIn was canceled'})
+            let value = parseFloat(elem.style.opacity) + increment
+            if (value <= 1) {
+                elem.style.opacity = value
+                requestAnimationFrame(fade)
+            } else {
+                resolve()
+            }
         }
+        fade()
+    })
+    return {
+        promise,
+        cancel: () => canceled = true
     }
-    fade()
 }
 
 /**
@@ -46,27 +54,33 @@ export const fadeIn = (elem, options=defaultFadeInOptions) => {
  * @type {AnimationOptions}
  */
 const defaultFadeOutOptions = {
-    division: 60, callback: () => null
+    division: 60
 }
 
 /**
  * Progressively fade out an element in n frame.
  * @param {!Element} elem
  * @param {?AnimationOptions} [options]
+ * @return {CancelablePromise}
  */
 export const fadeOut = (elem, options=defaultFadeOutOptions) => {
     const { division, callback } = {...defaultFadeOutOptions, ...options}
     elem.style.opacity = 1
     const increment = 1 / division
-    const fade = () => {
-        if ((elem.style.opacity -= increment) <= 0) {
-            elem.style.display = 'none'
-            callback()
-        } else {
-            requestAnimationFrame(fade)
+    let canceled = false
+    const promise = new Promise((resolve, reject) => {
+        const fade = () => {
+            if (canceled) reject({error: 'canceled', message: 'fadeOut was canceled'})
+            else if ((elem.style.opacity -= increment) <= 0) {
+                elem.style.display = 'none'
+                callback()
+            } else {
+                requestAnimationFrame(fade)
+            }
         }
-    }
-    fade()
+        fade()
+    })
+    return { promise, cancel: () => canceled = true }
 }
 
 /**
@@ -81,39 +95,45 @@ export const fadeOut = (elem, options=defaultFadeOutOptions) => {
  */
 
 const defaultMoveOptions = {
-    callback: () => null, height: 100, width: 100, division: 100
+    height: 100, width: 100, division: 100
 }
 
 /**
  * Move an element for height and width value.
  * @param {!Element} elem
  * @param {?MoveOutOptions} [options={height: 100, width: 100, division: 100}]
+ * @return {CancelablePromise}
  */
 export const moveOut = (elem, options=defaultMoveOptions) => {
-    const { callback, height, width, division } = {...defaultMoveOptions, ...options}
+    const { height, width, division } = {...defaultMoveOptions, ...options}
     const moveHeight = height / division
     const moveWidth = width / division
     const offsets = getOffset(elem)
     const destinationX = offsets.left + width
     const destinationY = offsets.top + height
     elem.style.position = 'absolute'
-    const move = () => {
-        let endX = false, endY = false
-        const { left, top } = getOffset(elem)
-        if (left < destinationX)
-            elem.style.left = left + moveWidth + 'px'
-        else
-            endX = true
-        if (top < destinationY)
-            elem.style.top = top + moveHeight + 'px'
-        else
-            endY = true
-        if (!endX || !endY)
-            requestAnimationFrame(move)
-        else
-            callback()
-    }
-    move()
+    let canceled = false
+    const promise = new Promise((resolve, reject) => {
+        const move = () => {
+            if (canceled) return reject({error: 'canceled', message: 'fadeOut was canceled'})
+            let endX = false, endY = false
+            const { left, top } = getOffset(elem)
+            if (left < destinationX)
+                elem.style.left = left + moveWidth + 'px'
+            else
+                endX = true
+            if (top < destinationY)
+                elem.style.top = top + moveHeight + 'px'
+            else
+                endY = true
+            if (!endX || !endY)
+                requestAnimationFrame(move)
+            else
+                resolve()
+        }
+        move()
+    })
+    return { promise, cancel: () => canceled = true}
 }
 
 
@@ -122,38 +142,44 @@ export const moveOut = (elem, options=defaultMoveOptions) => {
  * @type {AnimationOptions}
  */
 const defaultDeflateOptions = {
-    callback: () => null, division: 100
+    division: 100
 }
 
 /**
  * Deflate an element, making it disappear in n frames.
  * @param {!Element} elem
  * @param {?AnimationOptions} [options]
+ * @return {CancelablePromise}
  */
 export const deflate = (elem, options=defaultDeflateOptions) => {
-    const { division, callback } = {...defaultDeflateOptions, ...options}
+    const { division } = {...defaultDeflateOptions, ...options}
     const decrementX = Math.ceil(elem.offsetWidth / division)
     const decrementY = Math.ceil(elem.offsetHeight / division)
     const decrementFont = Math.ceil(getFontSize(elem) / division)
     elem.style.height = elem.offsetHeight + 'px'
-    const defl = () => {
-        let endX = false, endY = false
-        if (elem.offsetWidth > 0) {
-            elem.style.width = (elem.offsetWidth - decrementX) + 'px'
-        } else {
-            endX = true
+    let canceled = false
+    const promise = new Promise((resolve, reject) => {
+        const defl = () => {
+            if (canceled) return reject({error: 'canceled', message: 'fadeOut was canceled'})
+            let endX = false, endY = false
+            if (elem.offsetWidth > 0) {
+                elem.style.width = (elem.offsetWidth - decrementX) + 'px'
+            } else {
+                endX = true
+            }
+            if (elem.offsetHeight > 0) {
+                elem.style.height = (elem.offsetHeight - decrementY) + 'px'
+            } else {
+                endY = true
+            }
+            elem.style.fontSize = (getFontSize(elem) - decrementFont) + 'px'
+            if (!endX || !endY) {
+                requestAnimationFrame(defl)
+            } else {
+                resolve()
+            }
         }
-        if (elem.offsetHeight > 0) {
-            elem.style.height = (elem.offsetHeight - decrementY) + 'px'
-        } else {
-            endY = true
-        }
-        elem.style.fontSize = (getFontSize(elem) - decrementFont) + 'px'
-        if (!endX || !endY) {
-            requestAnimationFrame(defl)
-        } else {
-            callback()
-        }
-    }
-    defl()
+        defl()
+    })
+    return { promise, cancel: () => canceled = true }
 }

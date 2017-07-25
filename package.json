@@ -1,7 +1,7 @@
 {
   "name": "tarkjs",
   "version": "1.0.3",
-  "description": "",
+  "description": "Collection of promise oriented functions and classes.",
   "main": "lib/index.js",
   "scripts": {
     "test-watch": "cross-env NODE_ENV=test dev=true karma start karma.conf.js --browsers Chrome",

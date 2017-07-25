@@ -22,11 +22,12 @@ before_script:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
-  - npm run build
 after_script:
   - cat ./coverage/lcov.info | ./cc-test-reporter after-build -t lcov --exit-code $TRAVIS_TEST_RESULT
 after_success:
   - ./update-docs.sh
+before_deploy:
+  - npm run build
 deploy:
   provider: npm
   email: t4rk@outlook.com

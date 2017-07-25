@@ -48,12 +48,22 @@ export class EventBus {
      * Add an handler function to an event handler list.
      * @param {string|RegExp} event If regex it will match event.
      * @param {TEventHandler} handler
+     * @param {boolean} [once=false]
      */
-    addEventHandler(event, handler) {
+    addEventHandler(event, handler, once=false) {
         const isRegex = event instanceof RegExp
         const h = this._handlers.opt(event, { isRegex, handlers: [], original: event })
         if (!arrIncludes(h.handlers, handler)) {
-            h.handlers.push(handler)
+            if (once) {
+                const _wrap = (e) => {
+                    const ret = handler(e)
+                    this.removeEventHandler(event, _wrap)
+                    return ret
+                }
+                h.handlers.push(_wrap)
+            } else {
+                h.handlers.push(handler)
+            }
             this._handlers[event] = h
         }
     }

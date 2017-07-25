@@ -126,4 +126,14 @@ describe('Event bus spec', () => {
             done()
         })
     })
+
+    it('Test addEventHandler with option once', (done) => {
+        let firstPass = false
+        eventBus.addEventHandler('once', () => {
+            if (firstPass) expect(false).toBe(true)
+            else firstPass = true
+        }, true)
+        eventBus.dispatch('once')
+        eventBus.dispatch('once').promise.catch(done)
+    })
 })

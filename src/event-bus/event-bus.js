@@ -17,7 +17,7 @@ import { TObject } from '../containers/tobject'
 /**
  * Custom event object dispatched by the EventBus.
  * @typedef {TEvent} TEventHandlerParams
- * @property {function} cancel function to cancel the next events dispatch
+ * @property {function} cancel abort the next handlers from dispatching.
  * @property {Array} acc Accumulator of the return values of the previous handlers.
  * @property {number} i iterator of the handler.
  * @property {number} end length of the handlers.
@@ -46,9 +46,9 @@ export class EventBus {
 
     /**
      * Add an handler function to an event handler list.
-     * @param {string|RegExp} event If regex it will match event.
+     * @param {string|RegExp} event If regex it will match events.
      * @param {TEventHandler} handler
-     * @param {boolean} [once=false]
+     * @param {boolean} [once=false] For once to work properly, wait for a dispatch to finish before sending a new one.
      */
     addEventHandler(event, handler, once=false) {
         const isRegex = event instanceof RegExp
@@ -88,13 +88,19 @@ export class EventBus {
             let i = 0
             const acc = []
             const handle = (value) => {
-                if (value) {
-                    acc.push(value)
-                }
                 if (canceled)
                     return reject({
                         error: 'canceled',
                         message: `Dispatch ${event} was canceled after ${i} handlers.`})
+
+                if (value) {
+                    if (value instanceof Promise) {
+                        value.then(handle).catch(reject)
+                        return
+                    }
+                    else acc.push(value)
+                }
+
                 if (i < end) {
                     curProm = promiseWrap(() => {
                         const r = handlers[i]({event, payload, cancel, acc, i, end})
@@ -124,7 +130,7 @@ export class EventBus {
     removeEventHandler(event, handler) {
         const h = this._handlers[event]
         if (!h) return
-        h.handlers = h.handlers.filter(h => h !== handler)
+        this._handlers[event].handlers = h.handlers.filter(h => h !== handler)
     }
 
     /**

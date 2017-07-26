@@ -131,9 +131,22 @@ describe('Event bus spec', () => {
         let firstPass = false
         eventBus.addEventHandler('once', () => {
             if (firstPass) expect(false).toBe(true)
-            else firstPass = true
+            else {
+                firstPass = true
+            }
         }, true)
-        eventBus.dispatch('once')
-        eventBus.dispatch('once').promise.catch(done)
+        eventBus.dispatch({event: 'once'}).promise.then(() => eventBus.dispatch({event: 'once'}).promise.catch(done))
+    })
+
+    it('Test return Promise from handler', (done) => {
+        eventBus.addEventHandler('promise', (event) => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => event.payload && event.payload.rej ? reject('err') : resolve(200), 10)
+            })
+        })
+        eventBus.dispatch({event: 'promise'}).promise.then((value) => {
+            expect(value.acc[0]).toBe(200)
+            eventBus.dispatch({event: 'promise', payload: {rej: true}}).promise.catch(done)
+        })
     })
 })

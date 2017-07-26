@@ -2,12 +2,12 @@ import { getOffset, getFontSize } from '../dom-manipulations'
 
 /**
  * @typedef {Object} AnimationOptions
- * @property {?number} division number of frames to execute.
+ * @property {number} [division=100] number of frames to execute.
  */
 
 /**
  * @typedef {AnimationOptions} FadeInOptions
- * @property {?string} display
+ * @property {string} [display]
  */
 
 /**
@@ -43,10 +43,7 @@ export const fadeIn = (elem, options=defaultFadeInOptions) => {
         }
         fade()
     })
-    return {
-        promise,
-        cancel: () => canceled = true
-    }
+    return { promise, cancel: () => canceled = true }
 }
 
 /**
@@ -54,7 +51,7 @@ export const fadeIn = (elem, options=defaultFadeInOptions) => {
  * @type {AnimationOptions}
  */
 const defaultFadeOutOptions = {
-    division: 60
+    division: 100
 }
 
 /**

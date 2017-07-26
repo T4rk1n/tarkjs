@@ -38,7 +38,7 @@ export const fadeIn = (elem, options=defaultFadeInOptions) => {
                 elem.style.opacity = value
                 requestAnimationFrame(fade)
             } else {
-                resolve()
+                resolve(division)
             }
         }
         fade()
@@ -64,16 +64,16 @@ const defaultFadeOutOptions = {
  * @return {CancelablePromise}
  */
 export const fadeOut = (elem, options=defaultFadeOutOptions) => {
-    const { division, callback } = {...defaultFadeOutOptions, ...options}
+    const { division } = {...defaultFadeOutOptions, ...options}
     elem.style.opacity = 1
     const increment = 1 / division
     let canceled = false
     const promise = new Promise((resolve, reject) => {
         const fade = () => {
-            if (canceled) reject({error: 'canceled', message: 'fadeOut was canceled'})
-            else if ((elem.style.opacity -= increment) <= 0) {
+            if (canceled) return reject({error: 'canceled', message: 'fadeOut was canceled'})
+            if ((elem.style.opacity -= increment) <= 0) {
                 elem.style.display = 'none'
-                callback()
+                resolve()
             } else {
                 requestAnimationFrame(fade)
             }

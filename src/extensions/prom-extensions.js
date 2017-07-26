@@ -12,15 +12,15 @@ export const globalCallbacks = (() => {
     // eslint-disable-next-line no-undef
     const glob = typeof module !== 'undefined' && module.exports ? global
         : typeof window !== undefined ? window : typeof self !== undefined ? self : {}
+        
+    const setACB = (cb, clear) => {
+        acb.asyncCallback = (func) => cb(func)
+        acb.clearCallback = (callId) => clear(callId)
+    }
 
-    if (glob.requestIdleCallback) {
-        acb.asyncCallback = (func) => glob.requestIdleCallback(func)
-        acb.clearCallback = (callId) => glob.cancelIdleCallback(callId)
-    }
-    else if (glob.setImmediate) {
-        acb.asyncCallback = (func) => glob.setImmediate(func)
-        acb.clearCallback = (callId) => glob.clearImmediate(callId)
-    }
+    if (glob.requestIdleCallback) setACB(glob.requestIdleCallback, glob.cancelIdleCallback)
+    else if (glob.setImmediate) setACB(glob.setImmediate, glob.clearImmediate)
+
     return Object.freeze ? Object.freeze(acb) : acb
 })()
 

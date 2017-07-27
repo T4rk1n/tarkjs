@@ -4,7 +4,7 @@
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
 import { arrChunk, arrSum } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
-import { toCancelable, delayed } from '../src/extensions/prom-extensions'
+import {toCancelable, delayed, promiseWrap} from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
 
 
@@ -92,6 +92,14 @@ describe('Test prom-extensions', () => {
         p2.cancel()
         p2.promise.catch(done)
     })
+
+    it('Test promiseWrap cancel', (done) => {
+        const wrap = promiseWrap((e, a) => expect('canceled').toBeNull(), {args: [1,2]})
+        wrap.promise.catch(done)
+        wrap.cancel()
+    })
+
+
 })
 
 describe('Test str-extensions', () => {

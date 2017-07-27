@@ -4,7 +4,9 @@
 
 import * as manip from '../src/dom/dom-manipulations'
 import * as anim from '../src/dom/animations/animations'
-
+import { EventBus } from '../src/event-bus/event-bus'
+import { mutantNotifier } from '../src/event-bus/mutant-notifier'
+import {setElementAttributes} from '../src/dom/dom-manipulations'
 
 describe('dom spec', () => {
     const mainElem = manip.createElement(document.querySelector('body'), 'main')
@@ -49,5 +51,18 @@ describe('dom spec', () => {
             done()
         })
     })
+
+    it('Mutant notifier test', (done) => {
+        const eventBus = new EventBus()
+        const mutant = mutantNotifier('mutant', eventBus)
+        mutant.observe(elem, {attributes: true})
+        eventBus.addEventHandler(/mutant/g, (e) => {
+            expect(e.payload.length).toBe(2)
+            mutant.disconnect()
+            done()
+        }, true)
+        setElementAttributes(elem, { contextmenu: 'Hello', title: 'mutant'})
+    })
+
 })
 

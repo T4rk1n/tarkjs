@@ -38,7 +38,7 @@ export class Deque {
      * @return {*}
      */
     popFront() {
-        return this._arr.shift()
+        this._arr = this._arr.slice(1, this._arr.length)
     }
 
     /**

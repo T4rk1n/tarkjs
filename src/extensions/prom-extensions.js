@@ -77,6 +77,7 @@ const defaultPromiseWrapOptions = {
  */
 export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
     let canceled = false,
+        cancel = () => {},
         reqId = -1
     const { rejectNull, nullMessage, args } = objExtend({}, defaultPromiseWrapOptions, options)
     const promise = new Promise((resolve, reject) => {
@@ -86,23 +87,26 @@ export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
             try { result = func(...args) }
             catch (e) { return reject(e) }
 
+            if (canceled) return
+
             if (rejectNull && !result) reject({
                 error:'null_result',
                 message: nullMessage || 'Expected promise result is null'
-            })
-            else if (canceled) reject({
-                error: 'canceled',
-                message: `Promise was canceled, reqId = ${reqId}`
             })
             else resolve(result)
         }
         // TODO get a better global check than window.
         reqId = globalCallbacks.asyncCallback(handle)
+        cancel = () => {
+            canceled = true
+            globalCallbacks.clearCallback(reqId)
+            reject({
+                error: 'canceled',
+                message: `Promise was canceled, reqId = ${reqId}`
+            })
+        }
     })
-    const cancel = () => {
-        canceled = true
-        globalCallbacks.clearCallback(reqId) // TODO Test if rejected because not sure it will reject if cleared.
-    }
+
     return {
         promise,
         cancel,

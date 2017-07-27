@@ -62,14 +62,16 @@ describe('Test PromiseStore', () => {
 })
 
 describe('Test SocketStore', () => {
+    const capacity = 12
     const socket = new SocketStore('ws://localhost:8889/', {
-        socketName: 'test', protocols: ['echo-protocol']
+        socketName: 'test', protocols: ['echo-protocol'], capacity
     })
+
     it('Test the socket subscription', (done) => {
         socket.onOpen = () => socket.send('1')
-        socket.onClose = () => done()
 
-        socket.subscribe((e) => {
+
+        const handler = (e) => {
             const { event, payload } = e
             const { data, store  } = payload
             const num = parseInt(data)
@@ -79,7 +81,31 @@ describe('Test SocketStore', () => {
             expect(num).toBeGreaterThanOrEqual(1)
             if (parseInt(data) > 10) socket.close()
             else socket.send(`${num + 1}`)
-        })
+        }
+        socket.onClose = () => {
+            socket.unsubscribe(handler)
+            done()
+        }
+        socket.subscribe(handler)
+
+        socket.start()
+    })
+    it('Test store capacity', (done) => {
+        socket.onOpen = () => socket.send('1')
+        socket.onClose = () => done()
+
+        const handler = (e) => {
+            expect(e.payload.store.length).toBeLessThanOrEqual(capacity)
+            const num = parseInt(e.payload.data)
+            if (num < (capacity + 5)) socket.send(`${num + 1}`)
+            else socket.close()
+        }
+        socket.onClose = () => {
+            socket.unsubscribe(handler)
+            done()
+        }
+        socket.subscribe(handler)
+
         socket.start()
     })
 })

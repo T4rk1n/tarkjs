@@ -2,7 +2,7 @@
  * Created by T4rk on 7/13/2017.
  */
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
-import { arrChunk, arrSum } from '../src/extensions/arr-extensions'
+import { arrChunk, arrSum, arrRange, arrIncludes } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
 import {toCancelable, delayed, promiseWrap} from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
@@ -37,6 +37,11 @@ describe('test arr-extensions', () => {
         expect(chunked).toContain([ 5, 6, 7, 8, 9 ])
 
     })
+
+    it('Test arrRange', () => {
+        const range = arrRange(0, 10)
+        expect(arr.reduce((a, e) => a && arrIncludes(range, e),true)).toBeTruthy()
+    })
 })
 
 // test random seed
@@ -66,7 +71,7 @@ describe('test SeededRandom', () => {
 
 describe('Test prom-extensions', () => {
     it('Should be canceled', (done) => {
-        const p = toCancelable(new Promise((resolve, reject) => {
+        const p = toCancelable(new Promise((resolve) => {
             setTimeout(() => resolve('hello'), 200)
         }))
         p.promise.catch(() => done())
@@ -74,7 +79,7 @@ describe('Test prom-extensions', () => {
         p.cancel()
     })
     it('Should be timeout', (done) => {
-        const p = toCancelable(new Promise((resolve, reject) => {
+        const p = toCancelable(new Promise((resolve) => {
             setTimeout(()=> resolve('hello'), 300)
         }), 200)
         p.promise.then(() => expect('to be canceled').toBeNull())

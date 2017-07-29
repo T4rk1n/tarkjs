@@ -50,3 +50,16 @@ export const arrMerge = (arr, ...arrs) => arrs.reduce((a, e) => arrCopy(arrCopy(
  * @return {Number}
  */
 export const arrSum = (arr) => arr.reduce((p, n) => p+n, 0)
+
+/**
+ *
+ * @param start
+ * @param stop
+ * @param step
+ * @return {Array}
+ */
+export const arrRange = (start, stop, step=1) => {
+    const arr = []
+    for (let i=start; step > 0 ? i < stop : i > stop; i += step) arr.push(i)
+    return arr
+}

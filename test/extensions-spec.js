@@ -6,6 +6,8 @@ import { arrChunk, arrSum, arrRange, arrIncludes, arrReverse, arrIntersect } fro
 import { SeededRandom } from '../src/extensions/random-extensions'
 import {toCancelable, delayed, promiseWrap} from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
+import { Deque } from '../src/containers/deque'
+import { rgbToInt, hexStrToInt, Color } from '../src/extensions/color-extensions'
 
 
 describe('Test obj-extensions', () => {
@@ -130,4 +132,36 @@ describe('Test str-extensions', () => {
         expect(m.length).toBe(11)
     })
 
+})
+
+describe('Deque spec', () => {
+    let deque
+    const capacity = 5
+    beforeEach(() => {
+        deque = new Deque({capacity, arr: [1,2,3]})
+    })
+    it('Test deque capacity', () => {
+        for (let i=0; i < 10; i++) {
+            deque.insert(i, true)
+            expect(deque.length).toBeLessThanOrEqual(capacity)
+        }
+    })
+})
+
+describe('Color spec', () => {
+    const colorStr = '#4286f4'  // rgb(66, 134, 244) int 4359924
+    const colorInt = 4359924
+    it('Test Color functions', () => {
+        expect(rgbToInt(66, 134, 244)).toBe(colorInt)
+        expect(hexStrToInt(colorStr)).toBe(colorInt)
+    })
+
+    it('Test Color class', () => {
+        const color = new Color(colorStr)
+        const { r, g, b } = color.rgb
+        expect(r).toBe(66)
+        expect(g).toBe(134)
+        expect(b).toBe(244)
+        expect(color.toRGBA(0.8)).toBe('rgba(66, 134, 244, 0.8)')
+    })
 })

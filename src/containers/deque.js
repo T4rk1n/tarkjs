@@ -30,7 +30,9 @@ export class Deque {
      * @return {*}
      */
     popBack() {
-        return this._arr.pop()
+        const ret = this._arr[this._arr.length - 1]
+        this._arr = this._arr.slice(0, this._arr.length - 1)
+        return ret
     }
 
     /**
@@ -38,7 +40,9 @@ export class Deque {
      * @return {*}
      */
     popFront() {
+        const ret = this._arr[0]
         this._arr = this._arr.slice(1, this._arr.length)
+        return ret
     }
 
     /**
@@ -73,6 +77,11 @@ export class Deque {
         return this.insert(item, true)
     }
 
+    /**
+     * {@link arrIncludes}
+     * @param item
+     * @return {boolean}
+     */
     include(item) {
         return arrIncludes(this._arr, item)
     }

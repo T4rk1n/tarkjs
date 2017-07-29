@@ -1,7 +1,7 @@
 /**
  * Created by T4rk on 6/19/2017.
  */
-import { objMapReducer, objItems } from '../extensions/obj-extensions'
+import { objMapReducer, objItems, objExtend } from '../extensions/obj-extensions'
 
 /**
  * Set the attributes of a DOM Element
@@ -17,8 +17,9 @@ export const setElementAttributes = (elem, attributes) => objItems(attributes)
 export const getHead = () => document.querySelector('head')
 
 /**
+ * {@link createElement}
  * @typedef {Object} CreateElementOptions
- * @property {string} [elementType='div'] The string representation of an html tag without the `<>`
+ * @property {string} [elementType='div'] The string representation of a html tag without the `<>`
  * @property {Object} [attributes={}] Attributes to set on the element before inserting in the dom.
  * @property {string} [innerHtml=''] Set the inner html before inserting in the dom.
  * @property {boolean} [front=false] Insert as first child of the container.
@@ -151,26 +152,48 @@ export const serializeStyleObj = (styleObj) => objItems(styleObj)
  * Get all the url params of the current page.
  * @return {Object}
  */
-export const getUrlParams = () => window.location.search.substring(1).split('&').map(p => p.split('=')).reduce(objMapReducer)
+export const getUrlParams = () => window.location.search.substring(1).split('&')
+    .map(p => p.split('=')).reduce(objMapReducer)
+
+/**
+ * {@link createDownload} options.
+ * @typedef {Object} CreateDownloadOptions
+ * @property {string} [type="text/plain;charset=utf-8;"] a valid mimetype.
+ * @property {boolean} [revoke=true] revoke the url object created to release memory.
+ * @property {click} [click=false]
+ */
+
+/**
+ * @type {CreateDownloadOptions}
+ */
+const createDownloadOptions = {
+    type: 'text/plain;charset=utf-8;', revoke: true, click: false
+}
 
 /**
  * Cross compatible download from text content.
  * @param {string} filename
  * @param {string} content
- * @param {string} [type="text/plain;charset=utf-8;"] a valid mimetype.
- * @param {boolean} [revoke=true] revoke the url object created to release memory.
+ * @param {CreateDownloadOptions} [options]
+ * @return {function|undefined} activate the download
  */
-export const createDownload = (filename, content, type='text/plain;charset=utf-8;', revoke=true) => {
+export const createDownload = (filename, content, options) => {
+    let activate
+    const { type, revoke, click } = objExtend({}, createDownloadOptions, options)
     const blob = new Blob([content], {type})
     if (window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(blob, filename)
+        activate = () => window.navigator.msSaveOrOpenBlob(blob, filename)
     } else {
-        const href = window.URL.createObjectURL(blob)
-        const elem = createElement(document.querySelector('body'), filename, {elementType: 'a', attributes: {
-            href, download: filename
-        }})
-        elem.click()
-        removeElement(elem)
-        if (revoke) window.URL.revokeObjectURL(href)
+        activate = () => {
+            const href = window.URL.createObjectURL(blob)
+            const elem = createElement(document.querySelector('body'), filename, {elementType: 'a', attributes: {
+                href, download: filename
+            }})
+            elem.click()
+            removeElement(elem)
+            if (revoke) window.URL.revokeObjectURL(href)
+        }
     }
+    if (click) activate()
+    else return activate
 }

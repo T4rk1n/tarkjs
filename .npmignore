@@ -103,8 +103,6 @@ typings/
 # dotenv environment variables file
 .env
 
-src
-
 .idea
 doc
 *.sh
@@ -112,3 +110,7 @@ doc
 test
 
 cc-test-reporter
+.travis.yml
+.esdoc.json
+.eslintrc.yml
+karma.conf.js

@@ -5,6 +5,15 @@
 
 export const rgbToInt = (r, g, b) => ((r&0x0ff)<<16)|((g&0x0ff)<<8)|(b&0x0ff)
 
+export const hexStrToInt = (str) => {
+    const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(str)
+    if (res) {
+        const [_, r,g,b ] = res
+        return  rgbToInt(parseInt(r, 16), parseInt(g, 16), parseInt(b, 16))
+    }
+}
+
+
 
 /**
  *
@@ -29,8 +38,10 @@ export class Color {
             this._color = value
             break
         case 'string':
-            this._color = Color.hexStrToInt(value)
-            if (!this._color) throw new EvalError(`Could not convert ${value} to int`)
+            this._color = Color._convertFromString(value)
+            break
+        case 'Object':
+            this._color = Color._convertFromObject(value)
             break
         default:
             throw new TypeError(`Is this a color: ${value} ?`)
@@ -73,35 +84,23 @@ export class Color {
     get rgb() { return { r: this.red, g: this.green, b: this.blue }}
 
     /**
-     * Convert the int value of each rgb color to a single integer.
-     * @param {int} r
-     * @param {int} g
-     * @param {int} b
-     * @return {int}
-     */
-    static rgbToInt(r, g, b) {
-        return ((r&0x0ff)<<16)|((g&0x0ff)<<8)|(b&0x0ff)
-    }
-
-    /**
-     * Convert a hex color string to an integer.
-     * @param {string} str
-     * @return {*}
-     */
-    static hexStrToInt(str) {
-        let res
-        if (res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(str)) {
-            const [_, r,g,b ] = res
-            return  Color.rgbToInt(parseInt(r, 16), parseInt(g, 16), parseInt(b, 16))
-        }
-    }
-
-    /**
      * Format to rgba string with alpha applied.
      * @param alpha
      * @return {string}
      */
     toRGBA(alpha=1) {
         return `rgba(${this.red}, ${this.green}, ${this.blue}, ${alpha})`
+    }
+
+    static _convertFromObject(obj) {
+        const { r, g, b } = obj
+        if (!([r,g,b].reduce((p,n) => p && n))) throw TypeError('Missing property r, g or b')
+        return rgbToInt(r,g,b)
+    }
+
+    static _convertFromString(str) {
+        const color = hexStrToInt(str)
+        if (!color) throw new EvalError(`Could not convert ${color} to int`)
+        return color
     }
 }

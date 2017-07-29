@@ -15,7 +15,7 @@ import { TObject } from '../containers/tobject'
  */
 
 /**
- * Custom event object dispatched by the EventBus.
+ * Custom event object dispatched by {@link EventBus#dispatch}.
  * @typedef {TEvent} TEventHandlerParams
  * @property {function} cancel abort the next handlers from dispatching.
  * @property {Array} acc Accumulator of the return values of the previous handlers.
@@ -24,16 +24,20 @@ import { TObject } from '../containers/tobject'
  */
 
 /**
+ * {@link EventBus#addEventHandler}
+ *
+ * A handler can return a value to be accumulated in dispatch.
+ * It may also return a Promise to be resolved.
  * @typedef {function} TEventHandler
  * @param {!TEventHandlerParams} params
  */
 
 /**
- * EventBus is an event dispatcher that wraps handlers in promises.
+ * EventBus is a custom event dispatcher that wraps handlers in promises.
  *
  * @example
  * const bus = new EventBus()
- * const handle = (payload) => {
+ * const handle = ({payload}) => {
  *      console.log(`Hello ${payload}`)
  * }
  * bus.addEventHandler('hello', handle)

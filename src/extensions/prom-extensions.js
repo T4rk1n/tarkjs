@@ -3,26 +3,7 @@
  */
 
 import { objExtend } from './obj-extensions'
-
-export const globalCallbacks = (() => {
-    const acb = {
-        asyncCallback: (func) => setTimeout(func, 0),
-        clearCallback: (callId) => clearTimeout(callId)
-    }
-    // eslint-disable-next-line no-undef
-    const glob = typeof module !== 'undefined' && module.exports ? global
-        : typeof window !== undefined ? window : typeof self !== undefined ? self : {}
-        
-    const setACB = (cb, clear) => {
-        acb.asyncCallback = (func) => cb(func)
-        acb.clearCallback = (callId) => clear(callId)
-    }
-
-    if (glob.requestIdleCallback) setACB(glob.requestIdleCallback, glob.cancelIdleCallback)
-    else if (glob.setImmediate) setACB(glob.setImmediate, glob.clearImmediate)
-
-    return Object.freeze ? Object.freeze(acb) : acb
-})()
+import { globalScope } from '../global-scope'
 
 /**
  * A promise may be canceled:
@@ -52,6 +33,17 @@ export const globalCallbacks = (() => {
  * @property {function(args:*):Promise} creator
  * @property {Array} [promArgs] arguments to call the creator
  */
+
+/**
+ * Create a {@link PromiseCreator} from a function and it's args to be called with.
+ * @param {function(args:*):Promise} creator
+ * @param {Array} [args]
+ * @return {PromiseCreator}
+ */
+export const promiseCreator = (creator, ...args) => ({
+    creator,
+    promArgs: args || []
+})
 
 /**
  * @type {PromiseWrapOptions}
@@ -103,10 +95,10 @@ export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
                 }
             }
         }
-        reqId = globalCallbacks.asyncCallback(handle)
+        reqId = globalScope.asyncCallback(handle)
         cancel = () => {
             canceled = true
-            globalCallbacks.clearCallback(reqId)
+            globalScope.clearCallback(reqId)
             reject({
                 error: 'canceled',
                 message: `Promise was canceled, reqId = ${reqId}`

@@ -4,7 +4,7 @@
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
 import { arrChunk, arrSum, arrRange, arrIncludes, arrReverse, arrIntersect } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
-import {toCancelable, delayed, promiseWrap} from '../src/extensions/prom-extensions'
+import {toCancelable, delayed, promiseWrap, chainPromises, promiseCreator } from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
 import { Deque } from '../src/containers/deque'
 import { rgbToInt, hexStrToInt, Color } from '../src/extensions/color-extensions'
@@ -124,6 +124,23 @@ describe('Test prom-extensions', () => {
         wrap.promise.catch(done)
         wrap.cancel()
     })
+
+    it('Test chainPromises', (done) => {
+        const chains = arrRange(0, 20).map((i) => promiseCreator((n)=> {
+            return new Promise((resolve, reject)=> {
+                setTimeout(() => {
+                    if (n < 18) resolve(n)
+                    else reject({error: 'reject_chain', num: n})
+                }, 1)
+            })
+        }, i))
+        const chain = chainPromises(chains)
+        chain.promise.catch((e) => {
+            expect(e.num).toBe(18)
+            done()
+        })
+    })
+
 })
 
 describe('Test str-extensions', () => {

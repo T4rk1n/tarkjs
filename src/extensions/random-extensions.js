@@ -2,8 +2,6 @@
  * Created by T4rk on 6/27/2017.
  */
 
-import { cosinusInterpolation } from './math-extensions'
-
 /**
  * Simple random number generator that shoots numbers based on a seed sequence.
  * No guarantee to randomness uniformity.

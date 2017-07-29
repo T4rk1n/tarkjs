@@ -28,7 +28,7 @@ export class Color {
 
     /**
      * Change the internal color.
-     * @param {number|string} value
+     * @param {number|string|Object} value
      * @throws {EvalError} could not parse the string value.
      * @throws {TypeError} wrong value type provided.
      */
@@ -40,7 +40,7 @@ export class Color {
         case 'string':
             this._color = Color._convertFromString(value)
             break
-        case 'Object':
+        case 'object':
             this._color = Color._convertFromObject(value)
             break
         default:

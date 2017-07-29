@@ -163,5 +163,14 @@ describe('Color spec', () => {
         expect(g).toBe(134)
         expect(b).toBe(244)
         expect(color.toRGBA(0.8)).toBe('rgba(66, 134, 244, 0.8)')
+        color.color = { r, g, b }
+        expect(color.int).toBe(colorInt)
+        color.color = colorInt
+        expect(color.hexString).toBe(colorStr)
+        try {
+            color.color = [10,'st', 'e', 20]
+        } catch(e) {
+            expect(e instanceof TypeError).toBeTruthy()
+        }
     })
 })

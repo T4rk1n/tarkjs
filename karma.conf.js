@@ -21,6 +21,7 @@ module.exports = function(config) {
             'test/**/*.js',
             {pattern: 'test/**/*.txt', watched: false, included: false, served: true, nocache: false},
             {pattern: 'test/**/*.json', watched: false, included: false, served: true, nocache: false},
+            {pattern: 'test/**/*.css', watched: false, included: false, served: true, nocache: false},
         ],
 
         // list of files to exclude

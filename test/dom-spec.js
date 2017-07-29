@@ -64,5 +64,35 @@ describe('dom spec', () => {
         setElementAttributes(elem, { contextmenu: 'Hello', title: 'mutant'})
     })
 
+    it('Test animate', (done) => {
+        let j = 0
+        let end = 80
+        const animation = ({i}, stopper) => {
+            expect(i).toBe(j)
+            j++
+            if (stopper && i > 30) return true
+        }
+        anim.animate([{animation}], { single: true, repeat: end}).promise.then((value) => {
+            expect(value).toBe(end)
+            anim.animate([{animation, infinite: true, single: true, args: [true]}]).promise.catch(done)
+        })
+    })
+
+    // Generic dom-manip tests
+
+    it('Test createElement insert front', () => {
+        manip.createElement(elem, 'first')
+        manip.createElement(elem, 'second', {front: true})
+        expect(elem.firstChild.id).toBe('second')
+    })
+
+    it('Test loadStyle, getFontSize',  (done) => {
+        manip.loadStyle('test-style', 'base/test/style.css', () => {
+            const elemStyle = manip.createElement(elem, 'styled', {attributes: {'class': 'test-class'}})
+            expect(manip.getFontSize(elemStyle)).toBe(32)
+            done()
+        })
+    })
+
 })
 

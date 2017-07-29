@@ -165,9 +165,9 @@ describe('Event bus spec', () => {
     })
 
     it('Test return Promise from handler', (done) => {
-        eventBus.addEventHandler('promise', (event) => {
+        eventBus.addEventHandler('promise', (e) => {
             return new Promise((resolve, reject) => {
-                setTimeout(() => event.payload && event.payload.rej ? reject('err') : resolve(200), 10)
+                setTimeout(() => e.payload && e.payload.rej ? reject('err') : resolve(200), 10)
             })
         })
         eventBus.dispatch({event: 'promise'}).promise.then((value) => {

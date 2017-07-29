@@ -93,9 +93,16 @@ export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
                 error:'null_result',
                 message: nullMessage || 'Expected promise result is null'
             })
-            else resolve(result)
+            else {
+                if (result instanceof Promise) {
+                    result.then((value) => {
+                        if (!canceled) resolve(value)
+                    }).catch(reject)
+                } else {
+                    resolve(result)
+                }
+            }
         }
-        // TODO get a better global check than window.
         reqId = globalCallbacks.asyncCallback(handle)
         cancel = () => {
             canceled = true

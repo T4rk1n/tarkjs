@@ -81,7 +81,7 @@ export class EventBus {
         }
         const promise = new Promise((resolve, reject) => {
             const handlers = this.findHandlers(event)
-            const  end = handlers.length
+            const end = handlers.length
             if (!handlers || handlers.length < 1) return reject({
                 error: 'missing_handler',
                 message:`No handler to dispatch ${event}`})
@@ -94,11 +94,7 @@ export class EventBus {
                         message: `Dispatch ${event} was canceled after ${i} handlers.`})
 
                 if (value) {
-                    if (value instanceof Promise) {
-                        value.then(handle).catch(reject)
-                        return
-                    }
-                    else acc.push(value)
+                    acc.push(value)
                 }
 
                 if (i < end) {
@@ -107,8 +103,7 @@ export class EventBus {
                         i++
                         return r
                     })
-                    curProm.promise.then(handle)
-                    curProm.promise.catch(reject)
+                    curProm.promise.then(handle, reject)
                 }
                 else {
                     resolve({event, acc, dispatched: i})

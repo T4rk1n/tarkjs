@@ -1,6 +1,6 @@
 {
   "name": "tarkjs",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Collection of promise oriented functions and classes.",
   "main": "lib/index.js",
   "scripts": {
@@ -28,7 +28,6 @@
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
-    "babel-loader": "^7.1.1",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-export-extensions": "^6.22.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
@@ -38,6 +37,7 @@
     "browserify": "^14.4.0",
     "cross-env": "^5.0.1",
     "eslint": "^4.0.0",
+    "gulp": "^3.9.1",
     "jasmine-core": "^2.6.4",
     "karma": "^1.7.0",
     "karma-babel-preprocessor": "^6.0.1",
@@ -53,7 +53,8 @@
     "sourcemapify": "^1.1.2",
     "uglify-js": "^3.0.25",
     "watchify": "^3.9.0",
-    "whatwg-fetch": "^2.0.3"
+    "whatwg-fetch": "^2.0.3",
+    "yargs": "^8.0.2"
   },
   "dependencies": {}
 }

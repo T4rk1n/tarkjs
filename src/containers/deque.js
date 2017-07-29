@@ -2,7 +2,7 @@
  * Created by T4rk on 6/30/2017.
  */
 
-import {arrIncludes} from '../extensions/arr-extensions'
+import { arrIncludes, arrCopy } from '../extensions/arr-extensions'
 /**
  * Double ended queue.
  */
@@ -73,38 +73,6 @@ export class Deque {
         return this.insert(item, true)
     }
 
-    /**
-     * @param {function} mapping
-     * @return {Array} mapped array.
-     */
-    map(mapping) {
-        return this._arr.map(mapping)
-    }
-
-    /**
-     * @param {function} predicate
-     * @return {Array}
-     */
-    filter(predicate) {
-        return this._arr.filter(predicate)
-    }
-
-    /**
-     * @param {function} reducer
-     * @param {function} first
-     * @return {*}
-     */
-    reduce(reducer, first) {
-        return this._arr.reduce(reducer, first)
-    }
-
-    /**
-     * @param {function} each
-     */
-    forEach(each) {
-        this._arr.forEach(each)
-    }
-
     include(item) {
         return arrIncludes(this._arr, item)
     }
@@ -123,5 +91,13 @@ export class Deque {
      */
     get length() {
         return this._arr.length
+    }
+
+    /**
+     * Return a copy of the internal data.
+     * @return {Array}
+     */
+    get data() {
+        return arrCopy(this._arr)
     }
 }

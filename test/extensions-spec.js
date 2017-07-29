@@ -2,7 +2,7 @@
  * Created by T4rk on 7/13/2017.
  */
 import { objItems, objFormat, objCopy, objRemoveKeys, objFilter } from '../src/extensions/obj-extensions'
-import { arrChunk, arrSum, arrRange, arrIncludes } from '../src/extensions/arr-extensions'
+import { arrChunk, arrSum, arrRange, arrIncludes, arrReverse, arrIntersect } from '../src/extensions/arr-extensions'
 import { SeededRandom } from '../src/extensions/random-extensions'
 import {toCancelable, delayed, promiseWrap} from '../src/extensions/prom-extensions'
 import { findAllMatches } from '../src/extensions/str-extensions'
@@ -42,6 +42,25 @@ describe('test arr-extensions', () => {
         const range = arrRange(0, 10)
         expect(arr.reduce((a, e) => a && arrIncludes(range, e),true)).toBeTruthy()
     })
+
+    it('Test arrReverse', () => {
+        const reversed = arrReverse(arr)
+        let j = 0
+        for (let i=arr.length-1; i >= 0; i--) {
+            expect(reversed[j]).toBe(arr[i])
+            j++
+        }
+    })
+
+    it('Test arrIntersect', () => {
+        const target = [3,4,5,10]
+        const intersection = arrIntersect(arr, target)
+        expect(intersection).toContain(3)
+        expect(intersection).toContain(4)
+        expect(intersection).toContain(5)
+        expect(intersection).not.toContain(10)
+    })
+
 })
 
 // test random seed
@@ -103,8 +122,6 @@ describe('Test prom-extensions', () => {
         wrap.promise.catch(done)
         wrap.cancel()
     })
-
-
 })
 
 describe('Test str-extensions', () => {

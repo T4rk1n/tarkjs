@@ -39,8 +39,12 @@ export const arrCopy = (arr, onto=[]) => arr.reduce((a,e) => {a.push(e); return 
 
 /**
  * Merges arrays together
- * @param {Array} arr
- * @param {...Array} arrs
+ * @param {Array} arr initial array.
+ * @param {...Array} arrs arrays to merge into arr
+ * @example
+ * import { arrMerge } from 'tarkjs'
+ * const merged = arrMerge([], [1,2], [3,4], [5,6])
+ * // [1,2,3,4,5,6]
  */
 export const arrMerge = (arr, ...arrs) => arrs.reduce((a, e) => arrCopy(arrCopy(e, a)), arr)
 
@@ -52,14 +56,33 @@ export const arrMerge = (arr, ...arrs) => arrs.reduce((a, e) => arrCopy(arrCopy(
 export const arrSum = (arr) => arr.reduce((p, n) => p+n, 0)
 
 /**
- *
- * @param start
- * @param stop
- * @param step
+ * Generate a list of number.
+ * @param {number} start Beginning of the sequence.
+ * @param {number} stop End of the sequence.
+ * @param {number} [step=1]
  * @return {Array}
  */
 export const arrRange = (start, stop, step=1) => {
     const arr = []
     for (let i=start; step > 0 ? i < stop : i > stop; i += step) arr.push(i)
     return arr
+}
+
+/**
+ * Return the elements of arr that are also in other.
+ * @param {Array} arr source array
+ * @param {Array} target
+ * @return {Array}
+ */
+export const arrIntersect = (arr, target) => arr.filter(e => arrIncludes(target, e))
+
+/**
+ * Reverse the array without mutating the original.
+ * @param {Array} arr Original to reverse.
+ * @return {Array} new reversed array.
+ */
+export const arrReverse = (arr) => {
+    const reversed = []
+    for (let i=arr.length-1; i >= 0; i--) reversed.push(arr[i])
+    return reversed
 }

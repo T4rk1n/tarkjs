@@ -122,6 +122,17 @@ export const promiseWrap = (func, options=defaultPromiseWrapOptions) => {
 }
 
 /**
+ * Pre promiseWrap a function to be called later.
+ * @param {function} func
+ * @param {Array<*>} args
+ * @param {PromiseWrapOptions} [options]
+ * @return {function(): CancelablePromise}
+ */
+export const wrapLater = (func, args, options={}) => {
+    return () => promiseWrap(func, {args, ...options})
+}
+
+/**
  * Wrap a promise as cancelable with timeout option.
  * Rejection after resolve.
  * @param  {!Promise} promise

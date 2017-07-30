@@ -4,7 +4,6 @@
 
 /**
  * global object filler, either global, window or self.
- * @type {{asyncCallback: function, clearCallback: function, scope: *}}
  */
 export const globalScope = (() => {
     // eslint-disable-next-line no-undef

@@ -15,7 +15,6 @@ let headCache
 
 /**
  * Cached head after first get for faster access.
- * @return {HTMLHeadElement}
  */
 export const getHead = () => {
     if (headCache) return headCache

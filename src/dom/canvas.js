@@ -23,7 +23,7 @@ const rollImagesOptions = {
 
 /**
  * Draw images on a canvas.
- * @param {HTMLCanvasElement} canvas a element of type canvas
+ * @param {Element} canvas a element of type canvas
  * @param {Array<Image>} imageList
  * @param {RollImagesOptions} [options]
  * @return {CancelablePromise}

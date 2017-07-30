@@ -60,7 +60,7 @@ eventBus.dispatch({event: 'custom_event', payload: 'hello'})
 // Accumulate
 [1, 2, 3].forEach(i => eventBus.addEventHandler('accumulate', () => i))
 const { promise } = eventBus.dispatch({event: 'accumulate'})
-promise.then((value) => value.reduce((p,n) => p+n))
+promise.then(({acc}) => acc.reduce((p,n) => p+n))
 
 ```
 ###### Regex handler
@@ -100,7 +100,7 @@ if (!store.actionStore.simple_fetch.store.pending)
     store.actions.simple_fetch('some_text.txt')
 ```
 
-##### [SocketStore](https://doc.esdoc.org/github.com/T4rk1n/tarkjs/)
+##### [SocketStore](https://doc.esdoc.org/github.com/T4rk1n/tarkjs/class/src/persistance/mem-stores.js~SocketStore.html)
 
 A web socket that store a number of messages in a deque and dispatch events to subscribers.
 

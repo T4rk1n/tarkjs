@@ -92,12 +92,22 @@ export class Color {
         return `rgba(${this.red}, ${this.green}, ${this.blue}, ${alpha})`
     }
 
+    /**
+     * 
+     * @param obj
+     * @private
+     */
     static _convertFromObject(obj) {
         const { r, g, b } = obj
         if (!([r,g,b].reduce((p,n) => p && n))) throw TypeError('Missing property r, g or b')
         return rgbToInt(r,g,b)
     }
 
+    /**
+     *
+     * @param str
+     * @private
+     */
     static _convertFromString(str) {
         const color = hexStrToInt(str)
         if (!color) throw new EvalError(`Could not convert ${color} to int`)

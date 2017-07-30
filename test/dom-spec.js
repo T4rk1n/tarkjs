@@ -7,6 +7,8 @@ import * as anim from '../src/dom/animations/animations'
 import { EventBus } from '../src/event-bus/event-bus'
 import { mutantNotifier } from '../src/event-bus/mutant-notifier'
 import {setElementAttributes} from '../src/dom/dom-manipulations'
+import { loadImage, loadStyle, loadScript } from '../src/dom/loaders'
+
 
 describe('dom spec', () => {
     const mainElem = manip.createElement(document.querySelector('body'), 'main')
@@ -87,11 +89,28 @@ describe('dom spec', () => {
     })
 
     it('Test loadStyle, getFontSize',  (done) => {
-        manip.loadStyle('test-style', 'base/test/style.css', () => {
+        loadStyle('test-style', 'base/test/style.css').promise.then(() => {
             const elemStyle = manip.createElement(elem, 'styled', {attributes: {'class': 'test-class'}})
             expect(manip.getFontSize(elemStyle)).toBe(32)
             done()
         })
+    })
+
+    it('Test loadScript', (done) => {
+        loadScript('test-script', 'https://cdnjs.cloudflare.com/ajax/libs/min.js/0.2.3/$.min.js').promise.then(() => {
+            const minElem = $('#main')
+            expect(minElem).toBe(mainElem)
+            done()
+        })
+    })
+
+    it('Test loadImage', (done) => {
+        const imgProm = loadImage('base/test/test-image.jpg')
+        imgProm.promise.catch(e => {
+            expect(e.error).toBe('canceled')
+            done()
+        })
+        imgProm.cancel()
     })
 
 })

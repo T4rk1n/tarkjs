@@ -4,6 +4,7 @@
 
 export * from './extensions/arr-extensions'
 export * from './dom/dom-manipulations'
+export * from './dom/loaders'
 export * from './extensions/obj-extensions'
 export * from './extensions/str-extensions'
 export * from './extensions/random-extensions'

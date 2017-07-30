@@ -68,35 +68,6 @@ export const createElement = (container, elementId, options=defaultCreateElement
 export const removeElement = (elem) => elem.parentNode.removeChild(elem)
 
 /**
- * Load a style into the head.
- * @param {!string} styleId unique id to only load once.
- * @param {!string} cssFile file to load.
- * @param {?function} onload may only work in chrome and ff.
- */
-export const loadStyle = (styleId, cssFile, onload= ()=> null) => createElement(getHead(), styleId, {
-    attributes: {
-        rel: 'stylesheet',
-        type: 'text/css',
-        href: cssFile,
-        media: 'all',
-    },
-    elementType: 'link',
-    onload
-})
-
-/**
- * Append a script to the body.
- * @param {!string} scriptId unique id to only load once.
- * @param {!string} src file to load.
- * @param {?function} [onload]
- */
-export const loadScript = (scriptId, src, onload= ()=> null) => createElement(document.querySelector('body'), scriptId,{
-    elementType: 'script',
-    attributes: {src},
-    onload
-})
-
-/**
  * Apply disabled attribute to a link tag.
  * @param {string} styleId
  */

@@ -189,7 +189,7 @@ const defaultChainOptions = {
 }
 
 /**
- *
+ * Chains promise until completion or rejection.
  * @param {Array<PromiseCreator>} creators
  * @param {PromiseChainOptions} [options]
  * @return {CancelablePromise}

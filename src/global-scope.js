@@ -9,8 +9,9 @@
 export const globalScope = (() => {
     // eslint-disable-next-line no-undef
     const glob = typeof module !== 'undefined' && module.exports ? global
-        : typeof window !== undefined ? window : typeof self !== undefined ? self : {}
+        : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : {}
 
+    /* istanbul ignore next */
     const acb = {
         asyncCallback: (func) => setTimeout(func, 0),
         clearCallback: (callId) => clearTimeout(callId),
@@ -22,6 +23,7 @@ export const globalScope = (() => {
         acb.clearCallback = (callId) => clear(callId)
     }
 
+    /* istanbul ignore else */
     if (glob.requestIdleCallback) setACB(glob.requestIdleCallback, glob.cancelIdleCallback)
     else if (glob.setImmediate) setACB(glob.setImmediate, glob.clearImmediate)
 

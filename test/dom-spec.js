@@ -7,8 +7,8 @@ import * as anim from '../src/dom/animations/animations'
 import { EventBus } from '../src/event-bus/event-bus'
 import { mutantNotifier } from '../src/event-bus/mutant-notifier'
 import {setElementAttributes} from '../src/dom/dom-manipulations'
-import { loadImage, loadStyle, loadScript } from '../src/dom/loaders'
-
+import { loadImage, loadStyle, loadScript, loadAllImages } from '../src/dom/loaders'
+import { rollImages } from '../src/dom/canvas'
 
 describe('dom spec', () => {
     const mainElem = manip.createElement(document.querySelector('body'), 'main')
@@ -111,6 +111,25 @@ describe('dom spec', () => {
             done()
         })
         imgProm.cancel()
+    })
+
+    it('Test rollImages', (done) => {
+        const canvas = manip.createElement(elem, 'canvas', {
+            elementType: 'canvas',
+            attributes: {
+                width: 80,
+                height: 48
+            }
+        })
+
+        const imageList = loadAllImages('base/test/gallery/', 'jpg', 1, 3)
+        imageList.promise.then(list => {
+            const r = rollImages(canvas, list, {width: 80, height: 80})
+            r.promise.then(i => {
+                expect(i).toBe(2)
+                done()
+            })
+        })
     })
 
 })

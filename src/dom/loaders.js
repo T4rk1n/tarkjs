@@ -4,6 +4,7 @@
 
 import { createElement, getHead } from './dom-manipulations'
 import { objExtend } from '../extensions/obj-extensions'
+import { arrRange } from '../extensions/arr-extensions'
 
 /**
  * @typedef {Object} LoadingOptions
@@ -39,6 +40,75 @@ export const loadImage = (url) => {
         cancel
     }
 }
+
+/**
+ * Load images in a directory one by one until there is an error.
+ *
+ * @param {string} baseurl
+ * @param {string} extension
+ * @param {number} start
+ * @return {CancelablePromise} promise resolve Array<Image>
+ */
+export const loadImageChain = (baseurl, extension, start) => {
+    let i = start, cancel = () => {}, canceled = false, cur
+    const images = []
+    const promise = new Promise((resolve, reject) => {
+        const onStop = (e) => {
+            const { error } = e
+            if (error === 'canceled') resolve(images)
+            else reject(e)
+        }
+        const loadMore = (value) => {
+            if (value) {
+                images.push(value)
+                i++
+            }
+            if (!canceled) {
+                cur = loadImage(`${baseurl}${i}.${extension}`)
+                cur.promise.then(loadMore, onStop)
+            }
+        }
+        cancel = () => {
+            if (cur) cur.cancel()
+        }
+
+        loadMore()
+    })
+    return {
+        promise,
+        cancel
+    }
+}
+
+/**
+ *
+ * @param {string} baseurl
+ * @param {string} extension
+ * @param {number} start
+ * @param {number} stop
+ * @return {CancelablePromise}
+ */
+export const loadAllImages = (baseurl, extension, start, stop) => {
+    let cancel = () => {}
+    const images = []
+    const onLoadImage = (img) => images.push(img)
+    const promise = new Promise((resolve, reject) => {
+        const imagesPromises = arrRange(start, stop).map(i => {
+            const p = loadImage(`${baseurl}${i}.${extension}`)
+            p.promise.then(onLoadImage, reject)
+            return p
+        })
+        cancel = () => {
+            imagesPromises.forEach(p => p.cancel())
+        }
+        Promise.all(imagesPromises.map(p => p.promise)).then(() => resolve(images), reject)
+    })
+    return {
+        promise,
+        cancel
+    }
+}
+
 
 /**
  * Load a style into the head.

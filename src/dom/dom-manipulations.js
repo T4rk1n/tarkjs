@@ -11,10 +11,19 @@ import { objMapReducer, objItems, objExtend } from '../extensions/obj-extensions
 export const setElementAttributes = (elem, attributes) => objItems(attributes)
     .forEach(([k, v]) => elem.setAttribute(k, v))
 
+let headCache
+
 /**
- * shorthand func
+ * Cached head after first get for faster access.
+ * @return {HTMLHeadElement}
  */
-export const getHead = () => document.querySelector('head')
+export const getHead = () => {
+    if (headCache) return headCache
+    else {
+        headCache = document.querySelector('head')
+        return headCache
+    }
+}
 
 /**
  * {@link createElement}
@@ -23,6 +32,7 @@ export const getHead = () => document.querySelector('head')
  * @property {Object} [attributes={}] Attributes to set on the element before inserting in the dom.
  * @property {string} [innerHtml=''] Set the inner html before inserting in the dom.
  * @property {boolean} [front=false] Insert as first child of the container.
+ * @property {boolean} [insert=true] Insert the element upon creation or later.
  * @property {function} [onload] Callback when the element has been loaded.
  */
 
@@ -34,7 +44,8 @@ const defaultCreateElementOptions = {
     attributes: {},
     innerHtml: '',
     front: false,
-    onload: () => null
+    insert: true,
+    onload: null
 }
 
 /**
@@ -47,16 +58,20 @@ const defaultCreateElementOptions = {
 export const createElement = (container, elementId, options=defaultCreateElementOptions) => {
     let element = document.getElementById(elementId)
     if (!element) {
-        const { elementType, attributes, innerHtml, onload, front } = {...defaultCreateElementOptions, ...options}
+        const {
+            elementType, attributes, innerHtml, onload, front, insert
+        } = objExtend({}, defaultCreateElementOptions, options)
         element = document.createElement(elementType)
         element.id = elementId
         if (innerHtml) element.innerHTML = innerHtml
-        element.onload = onload
+        if (onload) element.onload = onload
         setElementAttributes(element, attributes)
-        if (front)
-            container.insertBefore(element, container.firstChild)
-        else
-            container.appendChild(element)
+        if (insert) {
+            if (front)
+                container.insertBefore(element, container.firstChild)
+            else
+                container.appendChild(element)
+        }
     }
     return element
 }
@@ -92,7 +107,8 @@ export const getOffset = (elem) => {
  * @param {string} propName
  * @return {number}
  */
-export const getComputedNumStyleAttr = (elem, propName) => parseFloat(window.getComputedStyle(elem, null).getPropertyValue(propName))
+export const getComputedNumStyleAttr = (elem, propName) => parseFloat(
+    window.getComputedStyle(elem, null).getPropertyValue(propName))
 
 /**
  * Get the actual font-size in pixel of an element.

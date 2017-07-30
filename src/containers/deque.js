@@ -64,6 +64,7 @@ export class Deque {
      * @return {Deque} this
      */
     pushBack(item) {
+        /* istanbul ignore next */
         return this.insert(item)
     }
 
@@ -74,6 +75,7 @@ export class Deque {
      * @return {Deque} this
      */
     pushFront(item) {
+        /* istanbul ignore next */
         return this.insert(item, true)
     }
 
@@ -92,6 +94,7 @@ export class Deque {
      * @return {*}
      */
     at(index) {
+        /* istanbul ignore next */
         return this._arr[index]
     }
 
@@ -107,6 +110,7 @@ export class Deque {
      * @return {Array}
      */
     get data() {
+        /* istanbul ignore next */
         return arrCopy(this._arr)
     }
 }

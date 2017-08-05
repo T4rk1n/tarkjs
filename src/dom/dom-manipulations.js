@@ -25,7 +25,7 @@ export const getHead = () => {
 }
 
 /**
- * {@link createElement}
+ * {@link createElement} options.
  * @typedef {Object} CreateElementOptions
  * @property {string} [elementType='div'] The string representation of a html tag without the `<>`
  * @property {Object} [attributes={}] Attributes to set on the element before inserting in the dom.

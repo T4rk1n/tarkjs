@@ -39,6 +39,7 @@
     "esdoc": "^1.0.1",
     "esdoc-ecmascript-proposal-plugin": "^1.0.0",
     "esdoc-importpath-plugin": "^1.0.0",
+    "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^4.0.0",
     "gulp": "^3.9.1",
     "jasmine-core": "^2.6.4",

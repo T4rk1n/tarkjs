@@ -17,6 +17,21 @@
         "objectRestSpread": true,
         "exportExtensions": true
       }
+    },
+    {
+      "name": "esdoc-standard-plugin",
+      "option": {
+        "lint": {"enable": true},
+        "coverage": {"enable": true},
+        "accessor": {"access": ["public", "protected", "private"], "autoPrivate": true},
+        "undocumentIdentifier": {"enable": true},
+        "unexportedIdentifier": {"enable": false},
+        "typeInference": {"enable": true},
+        "brand": {
+          "title": "tarkjs",
+          "repository": "https://github.com/T4rk1n/tarkjs"
+        }
+      }
     }
   ]
 }
